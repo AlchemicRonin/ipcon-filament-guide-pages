@@ -1,4 +1,69 @@
 (() => {
+  function readSources(res) {
+    try {
+      const raw = res.headers.get('x-ipcon-sources');
+      if (!raw) return [];
+      const rows = JSON.parse(decodeURIComponent(raw));
+      return Array.isArray(rows) ? rows.filter(x => x && /^https?:\/\//.test(x.url || '')) : [];
+    } catch { return []; }
+  }
+  function appendSources(el, rows) {
+    if (!el || !rows?.length) return;
+    const box = document.createElement('div');
+    box.className = 'ai-sources';
+    const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    box.innerHTML = '<span class="ai-src-label">来源</span>' + rows.map((x, i) =>
+      `<a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer" style="animation-delay:${(0.08 + i * 0.05).toFixed(2)}s">[${i + 1}] ${esc(x.site || '')} · ${esc(x.title || '')}</a>`
+    ).join('');
+    el.appendChild(box);
+  }
+
+  function makeTypedAnswer(el) {
+    el.textContent = '';
+    const typed = document.createElement('div');
+    typed.className = 'ai-typed';
+    el.appendChild(typed);
+    const lines = [];
+    let target = '', shown = 0, finished = false, timer = null, resolveDone, cancelled = false;
+    const done = new Promise(r => { resolveDone = r; });
+    function paint(text) {
+      const parts = text.split('\n');
+      for (let i = 0; i < parts.length; i++) {
+        let line = lines[i];
+        if (!line) {
+          line = document.createElement('div');
+          line.className = 'ai-line line-in';
+          lines[i] = line;
+          typed.appendChild(line);
+        }
+        if (line.textContent !== parts[i]) line.textContent = parts[i];
+      }
+      for (let i = lines.length - 1; i >= parts.length; i--) { lines[i].remove(); lines.pop(); }
+    }
+    function step() {
+      if (cancelled) return;
+      timer = null;
+      if (shown < target.length) {
+        const remain = target.length - shown;
+        const add = Math.max(1, Math.min(8, Math.ceil(remain / 90)));
+        shown = Math.min(target.length, shown + add);
+        paint(target.slice(0, shown));
+        timer = setTimeout(step, 16);
+      } else if (finished) {
+        resolveDone();
+      } else {
+        timer = setTimeout(step, 35);
+      }
+    }
+    function cancel() { cancelled = true; if (timer) clearTimeout(timer); timer = null; }
+    return {
+      push(t) { if (cancelled || !t) return; target += t; if (!timer) step(); },
+      finish() { if (cancelled) return; finished = true; if (!timer) step(); },
+      cancel,
+      done,
+    };
+  }
+
   const table = document.querySelector('table.grid');
   if (!table) return;
   const vp = document.querySelector('.table-viewport');
@@ -422,7 +487,7 @@
     const animKeep = aiPanel.animate([
       { height: first.height + 'px', width: first.width + 'px' },
       { height: last.height + 'px', width: last.width + 'px' }
-    ], { duration: 360, easing: 'cubic-bezier(.2,.7,.2,1)' });
+    ], { duration: 440, easing: 'cubic-bezier(.22,1.28,.36,1)' });
     animKeep.onfinish = () => {
       aiPanel.style.height = '';
       aiPanel.style.width = '';
@@ -536,7 +601,7 @@
           aiPanel.animate([
             { width: Math.min(360, r.width) + 'px', height: Math.min(250, r.height) + 'px', opacity: 0, transform: 'translateY(12px) scale(.98)' },
             { width: r.width + 'px', height: r.height + 'px', opacity: 1, transform: 'none' }
-          ], { duration: 520, easing: 'cubic-bezier(.2,.9,.2,1)' });
+          ], { duration: 560, easing: 'cubic-bezier(.2,1.28,.32,1)' });
         }
       }
     });
@@ -637,12 +702,12 @@
 
   const WIKI_L = wikiCN ? {
     info: '产品信息', physical: '物理性能', mechanical: '机械性能', settings: '推荐打印设置',
-    features: '特点与应用', tds: '下载 TDS', ask: '问 AI 这款材料', close: '关闭',
+    features: '特点与应用', usp: '核心卖点', apps: '应用场景', tds: '下载 TDS', ask: '✦ 问 AI 这款材料', close: '关闭',
     quick: '关键参数', source: '数据来自官方 TDS 与产品表', noTds: '暂无 TDS', method: '测试方法', site: '官网介绍', table: '表格全部参数', web: '官网产品页'
   } : {
     info: 'Product information', physical: 'Physical properties', mechanical: 'Mechanical properties',
-    settings: 'Recommended printing settings', features: 'Features & applications',
-    tds: 'Download TDS', ask: 'Ask AI about this material', close: 'Close',
+    settings: 'Recommended printing settings', features: 'Features & applications', usp: 'USP', apps: 'Applications',
+    tds: 'Download TDS', ask: '✦ Ask AI about this material', close: 'Close',
     quick: 'Key figures', source: 'From the official TDS and product table', noTds: 'TDS unavailable', method: 'Method', site: 'Official overview', table: 'All table parameters', web: 'Product page'
   };
 
@@ -671,8 +736,11 @@
     const m = String(v || '').match(/-?\d+(?:\.\d+)?/);
     return m ? Number(m[0]) : null;
   }
+  function displayValue(value) {
+    return wikiCN && /^N\/A\b/i.test(String(value || '').trim()) ? '—' : (value || '—');
+  }
   function fact(label, value, method) {
-    return `<div class="wiki-fact"><span>${esc(localLabel(label))}</span><b>${esc(value || '—')}</b>${method ? `<small>${esc(method)}</small>` : ''}</div>`;
+    return `<div class="wiki-fact"><span>${esc(localLabel(label))}</span><b>${esc(displayValue(value))}</b>${method ? `<small>${esc(method)}</small>` : ''}</div>`;
   }
   function esc(s) {
     return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -686,16 +754,114 @@
     });
     return mx || 1;
   }
+  const FEATURE_KW = wikiCN
+    ? ['碳纤维增强','玻璃纤维增强','碳纤增强','玻纤增强','超低翘曲','低翘曲','耐高温','耐热性','耐热','阻燃','食品接触','食品级','绝缘','超高韧性','高韧性','高强度','高刚性','轻量化','无氟无卤','抗紫外线','耐候性','耐候','高耐磨','耐磨','超高速','高速','低吸水','超低吸水','尺寸精度','层间强度','层间结合','金属光泽','金属质感','哑光','磨砂','抗菌','抗冲','耐水','耐油','耐化学','耐酸碱','抗蠕变','抗疲劳','低密度','易打印','多色','抗紫外']
+    : ['carbon fiber reinforced','glass fiber reinforced','carbon fiber','glass fiber','flame retardant','flame-retardant','flame retardancy','heat resistance','high temperature','ultra-high speed','ultra-fast','high-speed','high speed','wear resistance','wear-resistant','low warping','ultra-low warpage','food-contact','food contact','insulation','insulating','metallic','lightweight','high strength','high toughness','toughness','water resistance','oil resistance','weather resistance','UV resistance','chemical resistance','halogen-free','low water absorption','dimensional accuracy','layer adhesion','interlayer adhesion','matte','textured','antibacterial','impact resistance','impact-resistant','creep-resistant','anti-creep','low density','easy to print','high rigidity','high stiffness'];
+  const FEATURE_RX = new RegExp('(' + FEATURE_KW.sort((a, b) => b.length - a.length).map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', wikiCN ? 'g' : 'gi');
+  function emphasizeLine(line) {
+    let out = '', last = 0, m;
+    FEATURE_RX.lastIndex = 0;
+    while ((m = FEATURE_RX.exec(line))) {
+      out += esc(line.slice(last, m.index)) + '<b>' + esc(m[0]) + '</b>';
+      last = m.index + m[0].length;
+    }
+    return out + esc(line.slice(last));
+  }
   function quickStats(w) {
-    const labels = ['Density', 'Heat Deflection Temperature', 'Tensile Strength XY', 'Flexural Modulus XY', 'Impact Strength XY', 'Saturated Water Absorption Rate'];
-    const all = [...(w.physical || []), ...(w.mechanical || [])];
-    return labels.map(label => {
-      const item = all.find(x => x.label === label);
-      if (!item) return '';
-      const n = num(item.value);
-      const pct = n == null ? 0 : Math.max(4, Math.min(100, n / maxFor(label) * 100));
-      return `<div class="wiki-stat"><span>${esc(localLabel(label))}</span><b>${esc(item.value)}</b><i><em style="width:${pct.toFixed(1)}%"></em></i></div>`;
+    const groups = w.table?.[wikiCN ? 'CN' : 'EN'] || [];
+    const prop = groups.find(g => /特性|propert/i.test(g.label));
+    if (!prop) return '';
+    const colors = {
+      '强度': 'var(--chart-strength)', 'Strength': 'var(--chart-strength)',
+      '刚度': 'var(--chart-stiffness)', 'Stiffness': 'var(--chart-stiffness)',
+      '韧性': 'var(--chart-toughness)', 'Toughness': 'var(--chart-toughness)',
+      '层间粘接': 'var(--chart-toughness)', 'Layer Adhesion': 'var(--chart-toughness)',
+      '耐热性': 'var(--chart-heat)', 'Heat Resistance': 'var(--chart-heat)',
+      '长期耐热性': 'var(--chart-heat)', 'Long-term Heat Resistance': 'var(--chart-heat)',
+      '饱和吸水率': 'var(--chart-water)', 'Saturated Water Absorption Rate': 'var(--chart-water)',
+      '收缩率': 'var(--chart-water)', 'Shrinkage Rate': 'var(--chart-water)',
+      '表面硬度': 'var(--chart-hardness)', 'Surface Hardness': 'var(--chart-hardness)',
+      '密度': 'var(--chart-density)', 'Density': 'var(--chart-density)',
+      '熔融指数': 'var(--chart-flow)', 'Melting Index': 'var(--chart-flow)',
+    };
+    const maxFor = (label, detail) => {
+      let mx = 0;
+      Object.values(WIKI).forEach(x => {
+        const g = (x.table?.[wikiCN ? 'CN' : 'EN'] || []).find(q => /特性|propert/i.test(q.label));
+        g?.rows.forEach(r => {
+          if (r.label === label && (r.detail || '') === detail) {
+            const n = num(r.value); if (n != null) mx = Math.max(mx, n);
+          }
+        });
+      });
+      return mx || 1;
+    };
+    return prop.rows.map(r => {
+      const n = num(r.value);
+      const pct = n == null ? 0 : Math.max(4, Math.min(100, n / maxFor(r.label, r.detail) * 100));
+      const side = (r.detail || '').match(/XY|Z/)?.[0];
+      const label = side ? `${r.label} · ${side}` : r.label;
+      return `<div class="wiki-stat${String(r.value).length > 28 ? ' long' : ''}" style="--stat-color:${colors[r.label] || 'var(--brand)'}"><span>${esc(label)}</span><b>${esc(r.value)}</b><i><em style="width:${pct.toFixed(1)}%"></em></i></div>`;
     }).join('');
+  }
+
+  function cellHtmlFor(row, idx) {
+    const clean = v => String(v || '').replace(/\s+/g, ' ').trim();
+    const rows = [...document.querySelectorAll('.grid tbody tr')];
+    const label = clean(row.label), detail = clean(row.detail);
+    const tr = rows.find(tr => {
+      const lab = tr.querySelector('td.lab');
+      if (!lab) return false;
+      const text = clean(lab.innerText || lab.textContent);
+      return detail ? text.includes(detail) : text.includes(label);
+    });
+    const td = tr?.querySelector(`td.v[data-col="${idx}"]`);
+    if (td) return td.innerHTML;
+    const merged = tr?.querySelector('td.v.merged');
+    return merged ? merged.innerHTML : fact(row.label, row.value, row.detail);
+  }
+  function enrichVisual(label, value, html) {
+    if (/class="[^"]*(pill|rngbar|nozmat|diff)/.test(html)) return html;
+    const v = String(value || '').trim();
+    if (!v || v === '—' || v === 'N/A') return `<span class="wiki-dash">—</span>`;
+    if (/使用前是否干燥/.test(label)) {
+      const direct = /直接使用/.test(v);
+      const dry = /二次干燥/.test(v);
+      return `<span class="wiki-status">${direct ? '✓ 拆包可直接使用' : '需干燥'}</span>${dry ? `<span class="wiki-note">受潮后需二次干燥</span>` : ''}`;
+    }
+    if (/喷嘴尺寸/.test(label)) {
+      return `<span class="wiki-tags">${v.split(/[\/、]/).map(x => `<em>${esc(x.trim())}</em>`).join('')}</span>`;
+    }
+    if (/粘接方式/.test(label)) return `<span class="wiki-pill no">${esc(v)}</span>`;
+    if (/后处理|退火/.test(label) && /→/.test(v)) {
+      const [steps, note] = v.split(/（|\(/);
+      return `<span class="wiki-timeline">${steps.split('→').map(x => `<em>${esc(x.trim())}</em>`).join('<i>→</i>')}</span>${note ? `<span class="wiki-note">${/建议/.test(note) ? esc(note.replace(/[）)]/g, '')) : `建议不超过 ${esc(note.replace(/[）)]/g, ''))}`}</span>` : ''}`;
+    }
+    if (/难度/.test(label)) {
+      const level = /简单/.test(v) ? 1 : /较易/.test(v) ? 2 : /中等/.test(v) ? 3 : /较难/.test(v) ? 4 : /困难/.test(v) ? 5 : 0;
+      if (level) return `<span class="wiki-diff">${[1,2,3,4,5].map(i => `<i class="${i <= level ? 'on' : ''}"></i>`).join('')}<em>${esc(v.replace(/\*/g, ''))}</em></span>`;
+    }
+    if (/封箱/.test(label)) {
+      const cls = /推荐/.test(v) ? 'rec' : /不需要|无需/.test(v) ? 'no' : 'ok';
+      return `<span class="wiki-pill ${cls}">${esc(v)}</span>`;
+    }
+    if (/干燥剂/.test(label)) return `<span class="wiki-pill ok">${esc(v)}</span>`;
+    if (/兼容 AMS|AMS/.test(label)) return `<span class="wiki-pill ok">${esc(v)}</span>`;
+    if (/打印速度/.test(label)) {
+      const n = v.match(/(\d+(?:\.\d+)?)/);
+      const unit = v.match(/(mm\/s)/)?.[1] || '';
+      if (n) return `<span class="wiki-big"><b>${n[1]}</b><small>${unit}</small></span><span class="wiki-note">${esc(v.replace(n[1], '').replace(unit, '').trim())}</span>`;
+    }
+    if (/温度|床温|干燥条件|风扇/.test(label)) {
+      const nums = [...v.matchAll(/(\d+(?:\.\d+)?)/g)].map(x => Number(x[1])).filter(n => n <= 400);
+      if (nums.length >= 2) {
+        const lo = Math.min(...nums.slice(0, 2)), hi = Math.max(...nums.slice(0, 2));
+        const pct = x => Math.max(2, Math.min(100, x / 350 * 100));
+        const unit = /%/.test(v) ? '%' : /°C|℃/.test(v) ? '°C' : '';
+        return `<span class="wiki-range"><b>${lo}${unit}</b><i><em style="left:${pct(lo).toFixed(1)}%;width:${Math.max(2, pct(hi) - pct(lo)).toFixed(1)}%"></em></i><b>${hi}${unit}</b></span>`;
+      }
+    }
+    return html;
   }
   function renderWiki(idx) {
     const p = PRODUCTS[idx];
@@ -703,33 +869,70 @@
     if (!d) return;
     const card = document.querySelectorAll('.appgrid .card')[idx];
     const color = card?.querySelector('.cmodel')?.style.getPropertyValue('--swatch-color') || '#7A7A80';
+    const productColor = card?.querySelector('.ccolor')?.style.getPropertyValue('--product-color') || 'var(--muted)';
     const tds = d.tds ? encodeURI(d.tds) : '';
     wikiHead.innerHTML = `
       <div class="wiki-title-row">
-        <div class="wiki-title"><i style="background:${color}"></i><h3 id="wikiTitle">${esc(d.model)}</h3><span>${esc(d.color)}</span></div>
+        <div class="wiki-title"><i style="background:${color}"></i><h3 id="wikiTitle">${esc(d.model)}</h3><span style="color:${productColor}">${esc(d.color)}</span></div>
         <div class="wiki-actions">
           ${tds ? `<a class="wiki-btn" href="${tds}" target="_blank" rel="noopener">${WIKI_L.tds} ↗</a>` : `<span class="wiki-btn disabled">${WIKI_L.noTds}</span>`}
           ${d.site?.url ? `<a class="wiki-btn" href="${esc(d.site.url)}" target="_blank" rel="noopener">${WIKI_L.web} ↗</a>` : ''}
           <button class="wiki-btn primary" type="button" data-wiki-ai="${esc(d.model)}">${WIKI_L.ask}</button>
         </div>
-      </div>
-      <div class="wiki-source">${WIKI_L.source}</div>`;
+      </div>`;
     const section = (title, rows) => rows?.length ? `<section class="wiki-card"><h4>${title}</h4><div class="wiki-facts">${rows.map(r => fact(r.label, r.value, r.method)).join('')}</div></section>` : '';
-    const featureList = d.features_lang?.[wikiCN ? 'CN' : 'EN'] || d.features || [];
-    const features = featureList?.length ? `<section class="wiki-card wide"><h4>${WIKI_L.features}</h4><div class="wiki-prose">${featureList.map(x => `<p>${esc(x)}</p>`).join('')}</div></section>` : '';
+    const f = d.features_lang?.[wikiCN ? 'CN' : 'EN'];
+    const groups = f && !Array.isArray(f)
+      ? [{ label: WIKI_L.usp, rows: f.usp || [] }, { label: WIKI_L.apps, rows: f.apps || [] }]
+      : [{ label: WIKI_L.features, rows: d.features || [] }];
+    const featureHtml = groups.filter(g => g.rows?.length).map(g => `<div class="wiki-feature-group"><h5>${g.label}</h5><div class="wiki-prose">${g.rows.map(x => `<p>${emphasizeLine(x)}</p>`).join('')}</div></div>`).join('');
+    const features = featureHtml ? `<section class="wiki-card wide"><h4>${WIKI_L.features}</h4>${featureHtml}</section>` : '';
     const overview = (!wikiCN || /[\u4e00-\u9fff]/.test(d.site?.description || '')) && d.site?.description ? `<section class="wiki-card wide"><h4>${WIKI_L.site}</h4><div class="wiki-prose"><p>${esc(d.site.description)}</p><a class="wiki-inline-link" href="${esc(d.site.url)}" target="_blank" rel="noopener">${WIKI_L.web} ↗</a></div></section>` : '';
-    const tableRows = (d.table?.[wikiCN ? 'CN' : 'EN'] || []).map(g => `<section class="wiki-card wide"><h4>${esc(g.label)}</h4><div class="wiki-facts wiki-facts-two">${g.rows.map(r => fact(r.label, r.value, r.detail)).join('')}</div></section>`).join('');
+    const tableGroups = d.table?.[wikiCN ? 'CN' : 'EN'] || [];
+    const propGroup = tableGroups.find(g => /特性|propert/i.test(g.label));
+    const propertySection = propGroup
+      ? `<section class="wiki-card wide"><h4>${esc(propGroup.label)}</h4><div class="wiki-stats">${quickStats(d)}</div></section>`
+      : '';
+    const tableRows = tableGroups.filter(g => g !== propGroup).map(g =>
+      `<section class="wiki-card wide"><h4>${esc(g.label)}</h4><div class="wiki-visual-list">${g.rows.map(r => {
+        const side = (r.detail || '').trim();
+        return `<div class="wiki-visual-row"><div class="wiki-visual-label"><span>${esc(r.label)}</span>${side ? `<small>${esc(side)}</small>` : ''}</div><div class="wiki-visual-value">${(() => { const h = cellHtmlFor(r, idx); return h.startsWith('<div class="wiki-fact"') ? enrichVisual(r.label, r.value, h) : h; })()}</div></div>`;
+      }).join('')}</div></section>`
+    ).join('');
+
     wikiBody.innerHTML = `
-      <section class="wiki-card wide"><h4>${WIKI_L.quick}</h4><div class="wiki-stats">${quickStats(d)}</div></section>
+      ${propertySection}
       ${overview}
       <div class="wiki-grid">
-        ${section(WIKI_L.info, d.info)}
-        ${section(WIKI_L.settings, d.settings)}
-        ${section(WIKI_L.physical, d.physical)}
-        ${section(WIKI_L.mechanical, d.mechanical)}
         ${features}
         ${tableRows}
       </div>`;
+  }
+  const wikiScroller = wikiModal?.querySelector('.ai-panel-scroll');
+  function updateWikiFade() {
+    if (!wikiScroller) return;
+    const can = wikiScroller.scrollHeight - wikiScroller.clientHeight > 2;
+    wikiScroller.classList.toggle('fade-top', can && wikiScroller.scrollTop > 2);
+    wikiScroller.classList.toggle('fade-bottom', can && wikiScroller.scrollTop < wikiScroller.scrollHeight - wikiScroller.clientHeight - 2);
+  }
+  wikiScroller?.addEventListener('scroll', updateWikiFade, { passive: true });
+  window.addEventListener('resize', updateWikiFade);
+
+  function renderWikiSuggestions() {
+    const box = document.getElementById('wikiChatSuggest');
+    if (!box || box.children.length) return;
+    const items = wikiCN
+      ? ['适合什么场景？', '打印前怎么干燥？', '和同系列怎么选？']
+      : ['What is it best for?', 'How should I dry it?', 'How does it compare?'];
+    items.forEach(text => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = text;
+      b.addEventListener('click', () => {
+        if (wikiChatInput) wikiChatInput.value = text;
+        wikiChatForm?.requestSubmit();
+      });
+      box.appendChild(b);
+    });
   }
   function openWiki(idx) {
     if (wikiCloseTimer) { clearTimeout(wikiCloseTimer); wikiCloseTimer = null; }
@@ -738,7 +941,10 @@
     renderWiki(idx);
     wikiReturnFocus = document.activeElement;
     wikiModal.hidden = false;
-    requestAnimationFrame(() => wikiModal.classList.add('open'));
+    wikiWelcome();
+    renderWikiSuggestions();
+    checkAIStatus?.();
+    requestAnimationFrame(() => { wikiModal.classList.add('open'); updateWikiFade(); });
     lockPage();
     setTimeout(() => wikiModal.querySelector('.wiki-btn.primary')?.focus(), 50);
   }
@@ -769,15 +975,30 @@
     const all = [...(d.info || []), ...(d.physical || []), ...(d.mechanical || []), ...(d.settings || [])];
     const facts = all.map(x => `${x.label}: ${x.value}${x.method ? ` (${x.method})` : ''}`).join('\n');
     const table = (d.table?.[wikiCN ? 'CN' : 'EN'] || []).map(g => g.rows.map(r => `${r.label}${r.detail ? ' ' + r.detail : ''}: ${r.value}`).join('\n')).join('\n');
-    return `PRODUCT: ${d.model} / ${d.color}\nTDS:\n${facts}\nTABLE:\n${table}\nFEATURES:\n${(d.features_lang?.[wikiCN ? 'CN' : 'EN'] || []).join('\n')}`;
+    const fl = d.features_lang?.[wikiCN ? 'CN' : 'EN'];
+    const feat = Array.isArray(fl) ? fl : [...(fl?.usp || []), ...(fl?.apps || [])];
+    return `PRODUCT: ${d.model} / ${d.color}\nTDS:\n${facts}\nTABLE:\n${table}\nFEATURES:\n${feat.join('\n')}`;
   }
-  function wikiChatMsg(role, text) {
+  function wikiChatMsg(role, text, source) {
     const el = document.createElement('div');
-    el.className = 'wiki-chat-msg ' + role;
+    el.className = 'ai-msg ' + role;
     el.textContent = text;
+    if (source) {
+      const src = document.createElement('span');
+      src.className = 'src'; src.textContent = source;
+      el.appendChild(src);
+    }
     wikiChatLog.appendChild(el);
     wikiChatLog.scrollTop = wikiChatLog.scrollHeight;
+    wikiChatLog.classList.toggle('is-scrollable', wikiChatLog.scrollHeight - wikiChatLog.clientHeight > 2);
     return el;
+  }
+  function wikiNearBottom() {
+    return !wikiChatLog || wikiChatLog.scrollHeight - wikiChatLog.scrollTop - wikiChatLog.clientHeight < 40;
+  }
+  function wikiWelcome() {
+    if (!wikiChatLog || wikiChatLog.children.length) return;
+    wikiChatMsg('bot', wikiCN ? '可以直接问这款材料的 TDS、应用场景和打印问题。' : 'Ask anything about this material: TDS, applications, or printing.', wikiCN ? 'IPCON 数据' : 'IPCON data');
   }
   async function askWikiQuestion(q) {
     if (wikiIndex < 0) return;
@@ -785,6 +1006,7 @@
     if (!d) return;
     wikiChatMsg('user', q);
     const pending = wikiChatMsg('bot', wikiCN ? '正在思考…' : 'Thinking…');
+    pending.classList.add('deepseek', 'thinking');
     wikiAskProduct = d.model;
     try {
       if (!AI_ENDPOINT) throw new Error('no endpoint');
@@ -792,11 +1014,14 @@
       const timer = setTimeout(() => ctrl.abort(), 25000);
       const res = await fetch(AI_ENDPOINT, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, context: wikiContext(d), stream: true }), signal: ctrl.signal,
+        body: JSON.stringify({ question: q, context: wikiContext(d), stream: true, locale: wikiCN ? 'zh' : 'en' }), signal: ctrl.signal,
       });
       clearTimeout(timer);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       if ((res.headers.get('content-type') || '').includes('text/event-stream') && res.body) {
+        pending.classList.remove('thinking');
+        const sources = readSources(res);
+        const typer = makeTypedAnswer(pending);
         const reader = res.body.getReader(); const dec = new TextDecoder();
         let buf = '', answer = '';
         while (true) {
@@ -807,24 +1032,46 @@
           for (const line of lines) {
             const raw = line.trim(); if (!raw.startsWith('data:')) continue;
             const payload = raw.slice(5).trim(); if (!payload || payload === '[DONE]') continue;
-            try { const j = JSON.parse(payload); const delta = j?.choices?.[0]?.delta?.content; if (delta) { answer += delta; pending.textContent = answer; wikiChatLog.scrollTop = wikiChatLog.scrollHeight; } } catch {}
+            try {
+              const j = JSON.parse(payload); const delta = j?.choices?.[0]?.delta?.content;
+              if (delta) {
+                answer += delta;
+                typer.push(delta);
+              }
+            } catch {}
           }
         }
         if (!answer.trim()) throw new Error('empty');
+        typer.finish();
+        await typer.done;
+        appendSources(pending, sources);
+        wikiChatLog.classList.toggle('is-scrollable', wikiChatLog.scrollHeight - wikiChatLog.clientHeight > 2);
       } else {
         const data = await res.json();
-        pending.textContent = data.answer || data.error || (wikiCN ? '暂无回答' : 'No answer');
+        pending.classList.remove('thinking');
+        pending.classList.add('deepseek');
+        const typer = makeTypedAnswer(pending);
+        typer.push(data.answer || data.error || (wikiCN ? '暂无回答' : 'No answer'));
+        typer.finish();
+        await typer.done;
+        appendSources(pending, data.sources || []);
       }
     } catch (e) {
-      pending.textContent = wikiCN ? '暂时无法连接 AI，请先参考上方 TDS 参数。' : 'AI is temporarily unavailable. Please use the TDS above.';
+      pending.classList.remove('thinking', 'deepseek');
+      setAIStatus?.('off', wikiCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
+      const typer = makeTypedAnswer(pending);
+      typer.push(wikiCN ? '暂时无法连接 AI，请先参考上方 TDS 参数。' : 'AI is temporarily unavailable. Please use the TDS above.');
+      typer.finish();
+      await typer.done;
     }
   }
   wikiModal?.addEventListener('click', e => {
     if (e.target.closest('[data-wiki-close]')) closeWiki();
     const ai = e.target.closest('[data-wiki-ai]');
     if (ai) {
-      wikiChatInput?.focus();
-      wikiChatInput?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      const chat = wikiModal.querySelector('.wiki-embedded');
+      chat?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+      setTimeout(() => wikiChatInput?.focus({ preventScroll: true }), 360);
     }
   });
   wikiChatForm?.addEventListener('submit', e => {
@@ -849,10 +1096,11 @@
   const AI_ENDPOINT = document.querySelector('meta[name="ipcon-ai-endpoint"]')?.content?.trim() || '';
   const aiDsStatus = document.getElementById('aiDsStatus');
   function setAIStatus(state, label) {
-    if (!aiDsStatus) return;
-    aiDsStatus.dataset.state = state;
-    const em = aiDsStatus.querySelector('em');
-    if (em) em.textContent = label;
+    document.querySelectorAll('#aiDsStatus, #wikiDsStatus').forEach(el => {
+      el.dataset.state = state;
+      const em = el.querySelector('em');
+      if (em) em.textContent = label;
+    });
   }
   async function checkAIStatus() {
     if (!AI_ENDPOINT) { setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable'); return; }
@@ -884,8 +1132,12 @@
     if (chatLog) chatLog.classList.toggle('is-scrollable', chatLog.scrollHeight - chatLog.clientHeight > 2);
   }
 
-  function scrollPanelToBottom() {
+  function nearBottom(el) {
+    return !el || el.scrollHeight - el.scrollTop - el.clientHeight < 48;
+  }
+  function scrollPanelToBottom(force = false) {
     if (!panelScroller || aiModal.hidden) return;
+    if (!force && (!nearBottom(panelScroller) || !nearBottom(chatLog))) return;
     panelScroller.scrollTo({ top: panelScroller.scrollHeight, behavior: REDUCED ? 'auto' : 'smooth' });
   }
 
@@ -933,8 +1185,7 @@
   function answerTop(key, unit, dir, title) {
     const rows = topBy(key, dir, 3);
     return `${title}\n` + rows.map((x, n) =>
-      `${n + 1}. ${productLabel(x.p, x.i)} — ${x.p[key]} ${unit}`).join('\n') +
-      (isCN ? '\n\n数据来自当前表格。' : '\n\nFrom the current table.');
+      `${n + 1}. ${productLabel(x.p, x.i)} — ${x.p[key]} ${unit}`).join('\n');
   }
 
   function localAnswer(q) {
@@ -1010,50 +1261,16 @@
     });
   }
 
-  function makeTypewriter(el) {
-    el.textContent = '';
-    const node = document.createTextNode('');
-    el.appendChild(node);
-    let target = '', shown = 0, finished = false, timer = null, resolveDone, lastPanel = 0, cancelled = false;
-    const done = new Promise(r => { resolveDone = r; });
-    let lastScroll = 0;
-    function step() {
-      if (cancelled) return;
-      timer = null;
-      if (shown < target.length) {
-        const rectBefore = aiPanel ? aiPanel.getBoundingClientRect() : null;
-        const remain = target.length - shown;
-        const add = Math.max(1, Math.min(8, Math.ceil(remain / 90)));
-        shown = Math.min(target.length, shown + add);
-        node.nodeValue = target.slice(0, shown);
-        const now = performance.now();
-        if (rectBefore && now - lastPanel > 180) { lastPanel = now; animatePanelFrom(rectBefore); }
-        if (now - lastScroll > 55) { lastScroll = now; scrollPanelToBottom(); }
-        timer = setTimeout(step, 16);
-      } else if (finished) {
-        resolveDone();
-      } else {
-        timer = setTimeout(step, 35);
-      }
-    }
-    function cancel() { cancelled = true; if (timer) clearTimeout(timer); timer = null; }
-    return {
-      push(t) { if (cancelled || !t) return; target += t; if (!timer) step(); },
-      finish() { if (cancelled) return; finished = true; if (!timer) step(); },
-      cancel,
-      done,
-    };
-  }
-
   async function streamAnswer(res, pending, local) {
     const reader = res.body?.getReader();
     if (!reader) throw new Error('no stream body');
     const decoder = new TextDecoder();
     let buffer = '', answer = '';
     const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
+    const sources = readSources(res);
     pending.classList.remove('thinking');
     pending.classList.add('deepseek');
-    const typer = makeTypewriter(pending);
+    const typer = makeTypedAnswer(pending);
     pending._typerCancel = typer.cancel;
     while (true) {
       let timeoutId;
@@ -1084,9 +1301,7 @@
     typer.finish();
     await typer.done;
     pending._typerCancel = null;
-    const src = document.createElement('span');
-    src.className = 'src'; src.textContent = isCN ? '基于当前产品数据' : 'Based on current product data';
-    pending.appendChild(src);
+    appendSources(pending, sources);
     setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
     animatePanelFrom(before);
     scrollPanelToBottom();
@@ -1119,7 +1334,7 @@
         res = await fetch(AI_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question, context: buildAIContext(), stream: true }),
+          body: JSON.stringify({ question, context: buildAIContext(), stream: true, locale: isCN ? 'zh' : 'en' }),
           signal: ctrl.signal,
         });
       } finally { clearTimeout(timer); }
@@ -1132,27 +1347,25 @@
       const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
       pending.classList.remove('thinking');
       pending.classList.add('deepseek');
-      const typer = makeTypewriter(pending);
+      const typer = makeTypedAnswer(pending);
       typer.push(data.answer || data.error || local);
       typer.finish();
       await typer.done;
-      const src = document.createElement('span');
-      src.className = 'src'; src.textContent = isCN ? '基于当前产品数据' : 'Based on current product data';
-      pending.appendChild(src);
+      appendSources(pending, data.sources || []);
       setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
       animatePanelFrom(before);
       scrollPanelToBottom();
     } catch (e) {
       console.warn('AI fallback', e);
+      setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
       pending._typerCancel?.();
       pending._typerCancel = null;
       pending.classList.remove('thinking', 'deepseek');
       const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
-      const typer = makeTypewriter(pending);
+      const typer = makeTypedAnswer(pending);
       typer.push(local);
       typer.finish();
       await typer.done;
-      const src = document.createElement('span'); src.className = 'src'; src.textContent = isCN ? '数据来自当前产品表' : 'Data from the current product table'; pending.appendChild(src);
       animatePanelFrom(before);
       scrollPanelToBottom();
     }

@@ -113,8 +113,8 @@
 
 [data-theme="dark"] .appgrid .card {
   background: var(--c-161821);
-  background: color-mix(in oklab, var(--swatch-color, var(--ds)) 11%, var(--c-161821));
-  border-color: color-mix(in srgb, var(--swatch-color, var(--c-2a2e3a)) 24%, var(--c-2a2e3a));
+  background: color-mix(in oklab, var(--swatch-color, var(--ds)) 20%, var(--c-161821));
+  border-color: color-mix(in srgb, var(--swatch-color, var(--c-2a2e3a)) 40%, var(--c-2a2e3a));
   box-shadow: 0 10px 26px rgba(0,0,0,.20);
 }
 
@@ -203,7 +203,7 @@ html[data-theme="dark"] { background: var(--c-0b0c10); }
 [data-theme="dark"] .wiki-btn { background: var(--c-1a1c22); border-color: var(--c-343640); color: var(--c-ededeff); }
 [data-theme="dark"] .wiki-btn.primary { background: var(--ds); border-color: var(--ds); color: var(--c-fff); }
 [data-theme="dark"] .wiki-stat i { background: var(--c-2a2c35); }
-[data-theme="dark"] .wiki-stat em { background: var(--c-8fb4ff); }
+[data-theme="dark"] .wiki-stat em { background: var(--stat-color, var(--c-8fb4ff)); }
 [data-theme="dark"] .wiki-title h3,
 [data-theme="dark"] .wiki-fact b,
 [data-theme="dark"] .wiki-stat b,
@@ -211,3 +211,41 @@ html[data-theme="dark"] { background: var(--c-0b0c10); }
 
 [data-theme="dark"] .wiki-chat-msg.bot { background: var(--c-161821); border-color: var(--c-2a2e3a); color: var(--c-ededeff); }
 [data-theme="dark"] .wiki-chat-form input { background: var(--c-15161c); border-color: var(--c-343640); color: var(--c-f5f5f7); }
+[data-theme="dark"] .wiki-btn.primary { background: var(--ds); border-color: var(--ds); color: var(--c-fff); }
+[data-theme="dark"] .wiki-chat h4 { color: var(--c-8fb4ff); }
+[data-theme="dark"] .wiki-chat-form button { background: var(--ds); }
+[data-theme="dark"] .wiki-chat-msg.user { background: var(--ds); }
+[data-theme="dark"] .wiki-btn.primary {
+  background-color: transparent;
+  background-image: var(--brand-grad);
+  border: 0;
+  color: var(--c-fff);
+}
+[data-theme="dark"] .wiki-prose b { color: var(--c-ededeff); }
+[data-theme="dark"] .wiki-pill.ok { background: var(--c-173a2b); color: var(--c-7ee2a8); }
+[data-theme="dark"] .wiki-pill.rec { background: var(--c-3a2e16); color: var(--c-f5c451); }
+[data-theme="dark"] .wiki-pill.no { background: var(--c-25262d); color: var(--c-a0a0a8); }
+[data-theme="dark"] .wiki-diff i { background: var(--c-343640); }
+[data-theme="dark"] .wiki-range i { background: var(--c-2a2c35); }
+[data-theme="dark"] .wiki-big b { color: var(--c-ededeff); }
+[data-theme="dark"] .wiki-status { background: var(--c-173a2b); color: var(--c-7ee2a8); }
+[data-theme="dark"] .wiki-tags em { border-color: var(--c-343640); color: var(--c-ededeff); }
+[data-theme="dark"] .wiki-timeline em { border-color: var(--c-8a4b24); color: var(--c-f0a879); }
+[data-theme="dark"] .wiki-visual-value,
+[data-theme="dark"] .wiki-visual-value .vt,
+[data-theme="dark"] .wiki-visual-value .rngtxt,
+[data-theme="dark"] .wiki-visual-value .nozmat { color: var(--c-ededeff); }
+[data-theme="dark"] .wiki-visual-value .wiki-note,
+[data-theme="dark"] .wiki-visual-value .mtag { color: var(--c-a0a0a8); }
+[data-theme="dark"] .ai-msg.bot.deepseek {
+  background: var(--c-171a24);
+  border-color: var(--ds);
+  color: var(--c-e8e8ec);
+}
+[data-theme="dark"] .ai-msg.bot.deepseek.thinking {
+  background: var(--c-14213d);
+  border-color: var(--ds);
+  color: var(--c-eaf0ff);
+}
+[data-theme="dark"] .ai-sources { border-top-color: rgba(255,255,255,.09); }
+[data-theme="dark"] .ai-sources a { color: var(--c-9db7ff); }

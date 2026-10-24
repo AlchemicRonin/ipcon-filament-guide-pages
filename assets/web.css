@@ -113,7 +113,7 @@ body.web { width: 100% !important; max-width: 100vw !important; min-width: 0; ov
 .web .appshead { padding: 14px 18px 10px; }
 .web .appgrid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); padding: 0 18px 18px; }
 .web .appgrid .cmodel::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; background: var(--swatch-color, var(--product-color, var(--muted))); border: 1px solid rgba(0,0,0,.10); vertical-align: -1px; }
-.web .appgrid .card { background: #fff; background: color-mix(in oklab, var(--swatch-color, #fff) 5%, #fff); border-color: color-mix(in srgb, var(--swatch-color, var(--line)) 26%, var(--line)); position: relative; transition: opacity .32s ease, transform .32s cubic-bezier(.2,.7,.2,1), box-shadow .32s ease, border-color .28s ease, background-color .32s ease; will-change: opacity, transform; }
+.web .appgrid .card { background: #fff; background: color-mix(in oklab, var(--swatch-color, #fff) 15%, #fff); border-color: color-mix(in srgb, var(--swatch-color, var(--line)) 40%, var(--line)); position: relative; transition: opacity .32s ease, transform .32s cubic-bezier(.2,.7,.2,1), box-shadow .32s ease, border-color .28s ease, background-color .32s ease; will-change: opacity, transform; }
 .web .appgrid .card .card-x { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; border: 0; border-radius: 50%; background: var(--c-eef2f8); color: var(--muted); font-size: 0; line-height: 0; padding: 0; cursor: pointer; opacity: 0; transition: opacity .16s ease, background .16s ease, color .16s ease; z-index: 3; }
 .web .appgrid .card .card-x::before, .web .appgrid .card .card-x::after { content: ""; position: absolute; top: 50%; left: 50%; width: 7px; height: 1.5px; border-radius: 2px; background: currentColor; transform: translate(-50%, -50%) rotate(45deg); }
 .web .appgrid .card .card-x::after { transform: translate(-50%, -50%) rotate(-45deg); }
@@ -463,3 +463,179 @@ body.web, .hdr, .legendbar, .web-toolbar, .table-viewport, .grid th.corner, .gri
 .wiki-chat-form { display: flex; gap: 8px; margin-top: 10px; }
 .wiki-chat-form input { flex: 1; min-width: 0; border: 1px solid var(--line-strong); border-radius: 999px; padding: 8px 12px; font: inherit; font-size: 12px; outline: none; background: var(--surface); color: var(--text); }
 .wiki-chat-form button { border: 0; border-radius: 999px; padding: 8px 15px; background: var(--brand); color: var(--c-fff); font: inherit; font-size: 12px; cursor: pointer; }
+
+.wiki-stat em { background: var(--stat-color, var(--brand)); }
+.wiki-btn.primary { background: var(--ds); border-color: var(--ds); color: var(--c-fff); }
+.wiki-btn.primary:hover { filter: brightness(1.06); }
+.wiki-chat h4 { color: var(--ds); }
+.wiki-chat-form button { background: var(--ds); }
+.wiki-chat-msg.user { background: var(--ds); }
+
+/* wiki AI call-to-action mirrors the toolbar “帮我选材” shimmer */
+.wiki-btn.primary {
+  border: 0;
+  padding: 8px 15px;
+  background-color: transparent;
+  background-image: var(--brand-grad);
+  background-size: 200% 100%;
+  background-repeat: repeat;
+  animation: titleFlow var(--brand-speed, 5.4s) linear infinite;
+  color: var(--c-fff);
+  box-shadow: 0 5px 16px rgba(4,71,146,.24);
+  font-weight: 600;
+}
+.wiki-btn.primary:hover { filter: brightness(1.07); }
+
+.wiki-feature-group + .wiki-feature-group { margin-top: 10px; }
+.wiki-feature-group h5 { margin: 0 0 5px; font-size: 10.5px; font-weight: 600; color: var(--muted); }
+.wiki-prose b { font-weight: 700; color: var(--ink); }
+
+/* long property values: keep labels horizontal, let values take the full row */
+.wiki-stat { grid-template-columns: minmax(84px, max-content) 1fr; }
+.wiki-stat > span { white-space: nowrap; }
+.wiki-stat > b { text-align: right; overflow-wrap: anywhere; }
+.wiki-stat.long { grid-column: 1 / -1; }
+
+/* wiki: reuse the real table cell visuals (pills, ranges, nozzles) */
+.wiki-visual-list { display: grid; gap: 8px; }
+.wiki-visual-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(0, 1.15fr); gap: 14px; align-items: start; font-size: 11.5px; }
+.wiki-visual-label { display: flex; flex-direction: column; gap: 2px; color: var(--muted); }
+.wiki-visual-label small { font-size: 9px; color: var(--muted); line-height: 1.4; }
+.wiki-visual-value { color: var(--ink); min-width: 0; }
+.wiki-visual-value .rngbar { margin-top: 6px; max-width: 220px; }
+.wiki-visual-value .rngtxt { font-size: 11.5px; }
+.wiki-visual-value .nozmat { font-size: 11px; }
+.wiki-visual-value .pill { font-size: 10px; }
+@media (max-width: 700px) {
+  .wiki-visual-row { grid-template-columns: 1fr; gap: 4px; }
+}
+
+.wiki-visual-value .mtag { display: inline-block; margin-bottom: 4px; font-size: 8.5px; color: var(--muted); }
+
+/* wiki visual language for universal/merged rows */
+.wiki-dash { color: var(--muted); }
+.wiki-pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 600; }
+.wiki-pill.ok { background: var(--c-e8f7ee); color: var(--c-177245); }
+.wiki-pill.rec { background: var(--c-fdf3dd); color: var(--c-8a5a00); }
+.wiki-pill.no { background: var(--c-efeff4); color: var(--c-63636b); }
+.wiki-diff { display: inline-flex; align-items: center; gap: 4px; }
+.wiki-diff i { width: 7px; height: 7px; border-radius: 50%; background: var(--c-d7dbe4); display: block; }
+.wiki-diff i.on { background: var(--c-e8590c); }
+.wiki-diff em { font-style: normal; margin-left: 5px; font-size: 11px; color: var(--muted); }
+.wiki-big { display: inline-flex; align-items: baseline; gap: 3px; }
+.wiki-big b { font-size: 22px; line-height: 1; color: var(--ink); }
+.wiki-big small { font-size: 10px; color: var(--muted); }
+.wiki-note { display: block; margin-top: 4px; font-size: 9.5px; color: var(--muted); }
+.wiki-range { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 7px; max-width: 260px; }
+.wiki-range b { font-size: 10.5px; color: var(--ink); font-weight: 600; }
+.wiki-range i { position: relative; height: 4px; border-radius: 99px; background: var(--c-e6eaf2); overflow: hidden; }
+.wiki-range em { position: absolute; top: 0; bottom: 0; border-radius: inherit; background: var(--c-e8590c); }
+
+.wiki-status { display: inline-flex; align-items: center; border-radius: 999px; padding: 3px 9px; font-size: 10.5px; font-weight: 600; background: var(--c-e8f7ee); color: var(--c-177245); }
+.wiki-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.wiki-tags em { font-style: normal; border: 1px solid var(--line-strong); border-radius: 6px; padding: 2px 7px; font-size: 10px; color: var(--text); }
+.wiki-timeline { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.wiki-timeline em { font-style: normal; border: 1px solid var(--c-e8590c); border-radius: 999px; padding: 2px 8px; color: var(--c-e8590c); font-size: 10.5px; }
+.wiki-timeline i { font-style: normal; color: var(--muted); font-size: 10px; }
+
+/* assistant/wiki chat module uses the DeepSeek accent */
+.ai-chat-form button { background: var(--ds); }
+.ai-chat-form input:focus { border-color: var(--ds); box-shadow: 0 0 0 3px rgba(77,107,254,.14); }
+.ai-chat-head b { color: var(--ds); }
+.ai-chat-suggest button:hover { border-color: var(--ds); color: var(--ds); }
+.ai-msg.user { background: var(--ds); }
+
+.ai-eyebrow { color: var(--ds); }
+
+/* keep the assistant panel border stable while an answer types out */
+#aiModal .ai-chat-log:has(.ai-msg) { height: 280px; min-height: 280px; }
+
+/* match the overview card labels in the wiki feature block */
+.wiki-feature-group h5 {
+  font-size: 9px; font-weight: 700; color: var(--brand); letter-spacing: .5px;
+  margin: 10px 0 5px;
+  text-decoration: underline;
+  text-decoration-color: var(--c-b9cce2);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+/* Wiki is a single-material sheet: values start left, close to their labels.
+   The comparison chart above keeps its centered columns. */
+.wiki-visual-row { grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); }
+.wiki-visual-value { text-align: left; }
+
+.wiki-chat-status { display: flex; justify-content: flex-end; margin-top: 6px; }
+
+/* keep the wiki panel stable while the built-in answer streams */
+.wiki-chat-log:has(.ai-msg) { height: 220px; min-height: 220px; }
+
+/* chat input: one focus border, no stacked outline + glow */
+.ai-panel .ai-chat-form input:focus,
+.ai-panel .ai-chat-form input:focus-visible {
+  outline: none;
+  border-color: var(--ds);
+  box-shadow: none;
+}
+
+/* do not reserve empty chat space before a conversation starts */
+#aiModal .ai-chat-log:has(.ai-msg),
+.wiki-chat-log:has(.ai-msg) { height: auto; min-height: 0; }
+
+/* DeepSeek answer: breathing frame belongs to the thinking state only.
+   The finished answer settles to a normal bubble with a light left accent. */
+.ai-msg.bot.deepseek {
+  background: var(--c-f2f6fc);
+  border: 2px solid var(--ds);
+  color: var(--text);
+  box-shadow: none;
+}
+.ai-msg.bot.deepseek.thinking {
+  background: var(--c-e4edff);
+  border: 2px solid var(--ds);
+  color: var(--c-121c31);
+  box-shadow: inset 0 0 0 1px rgba(77,107,254,.10);
+  animation: dsBreath 2.6s ease-in-out infinite;
+}
+
+/* line-by-line arrival inside assistant answers */
+.ai-typed { display: block; }
+.ai-line { display: block; min-height: 1.2em; }
+.ai-line.line-in { animation: aiLineIn .4s cubic-bezier(.2,1.22,.32,1) both; }
+@keyframes aiLineIn {
+  from { opacity: 0; transform: translateY(5px); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) { .ai-line.line-in { animation: none; } }
+
+/* cloned table visuals: do not keep table's centered icon layout */
+.wiki-visual-value .ic { margin: 0; display: inline-block; vertical-align: middle; }
+.wiki-visual-value .vt,
+.wiki-visual-value .rngtxt { text-align: left; }
+
+/* wiki header follows the overview card's title treatment */
+.wiki-title h3 { font-family: inherit; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; }
+.wiki-title > span { font-size: 12px; font-weight: 500; }
+.wiki-title i { width: 12px; height: 12px; border-radius: 3px; }
+
+/* official-source citations under an answer */
+.ai-sources { display: flex; flex-wrap: wrap; gap: 5px 10px; margin-top: 9px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,.07); font-size: 10px; line-height: 1.5; }
+.ai-src-label { color: var(--muted); font-weight: 600; }
+.ai-sources a { color: var(--ds); text-decoration: none; }
+.ai-sources a:hover { text-decoration: underline; }
+
+/* source citations arrive with the answer, not as a hard append */
+.ai-sources { animation: aiSourcesIn .42s cubic-bezier(.2,1.12,.32,1) both; }
+.ai-src-label { animation: aiSourcesIn .42s cubic-bezier(.2,1.12,.32,1) both; }
+.ai-sources a { animation: aiSourceLinkIn .38s cubic-bezier(.2,1.12,.32,1) both; }
+@keyframes aiSourcesIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes aiSourceLinkIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ai-sources, .ai-src-label, .ai-sources a { animation: none; }
+}

@@ -1,5 +1,15 @@
 /* design tokens: every literal color in web.css/theme-dark.css resolves here */
 :root {
+  --c-fff: #FFFFFF;
+  --c-b9cce2: #B9CCE2;
+  --chart-strength: #2AAEC6;
+  --chart-stiffness: #7C20A3;
+  --chart-toughness: #2E9E5B;
+  --chart-heat: #E8590C;
+  --chart-water: #0A7EA4;
+  --chart-hardness: #7A7A80;
+  --chart-density: #044792;
+  --chart-flow: #DA291C;
   --c-0047ff: #0047FF;
   --c-00a3c7: #00A3C7;
   --brand: #044792;

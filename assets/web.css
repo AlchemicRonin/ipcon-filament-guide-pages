@@ -376,3 +376,5 @@ body.web, .hdr, .legendbar, .web-toolbar, .table-viewport, .grid th.corner, .gri
 .web .qr-item .qr-dark { opacity: 0; }
 [data-theme="dark"] .web .qr-item .qr-light { opacity: 0; }
 [data-theme="dark"] .web .qr-item .qr-dark { opacity: 1; }
+
+.web .qr-item img { image-rendering: pixelated; image-rendering: crisp-edges; }

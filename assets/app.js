@@ -626,12 +626,38 @@
     });
   })();
   const AI_ENDPOINT = document.querySelector('meta[name="ipcon-ai-endpoint"]')?.content?.trim() || '';
+  const aiDsStatus = document.getElementById('aiDsStatus');
+  function setAIStatus(state, label) {
+    if (!aiDsStatus) return;
+    aiDsStatus.dataset.state = state;
+    const em = aiDsStatus.querySelector('em');
+    if (em) em.textContent = label;
+  }
+  async function checkAIStatus() {
+    if (!AI_ENDPOINT) { setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable'); return; }
+    setAIStatus('checking', isCN ? '检测中' : 'Checking');
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 5000);
+      const res = await fetch(new URL('health', AI_ENDPOINT), { cache: 'no-store', signal: ctrl.signal });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error('health');
+      const data = await res.json();
+      if (data.ok && data.deepseek) setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
+      else setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
+    } catch (e) {
+      setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
+    }
+  }
+
   const chatLog = document.getElementById('aiChatLog');
   chatLog?.addEventListener('scroll', updateChatScrollState, { passive: true });
   const chatForm = document.getElementById('aiChatForm');
   const chatInput = document.getElementById('aiChatInput');
   const chatSuggest = document.getElementById('aiChatSuggest');
   const isCN = (document.documentElement.lang || 'zh').toLowerCase().startsWith('zh');
+  checkAIStatus();
+  setInterval(checkAIStatus, 60000);
 
   function updateChatScrollState() {
     if (chatLog) chatLog.classList.toggle('is-scrollable', chatLog.scrollHeight - chatLog.clientHeight > 2);
@@ -823,6 +849,7 @@
     const src = document.createElement('span');
     src.className = 'src'; src.textContent = isCN ? '基于当前产品数据' : 'Based on current product data';
     pending.appendChild(src);
+    setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
     animatePanelFrom(before);
     scrollPanelToBottom();
   }
@@ -874,6 +901,7 @@
       const src = document.createElement('span');
       src.className = 'src'; src.textContent = isCN ? '基于当前产品数据' : 'Based on current product data';
       pending.appendChild(src);
+      setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
       animatePanelFrom(before);
       scrollPanelToBottom();
     } catch (e) {

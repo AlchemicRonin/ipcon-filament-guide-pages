@@ -81,10 +81,9 @@
 [data-theme="dark"] .noz b { background: #20222A; border-color: #343640; color: #A0A0A8; }
 [data-theme="dark"] .noz b.on { background: #4D6BFE; border-color: #4D6BFE; color: #fff; }
 [data-theme="dark"] .noz b.rec { background: #1F5FBF; border-color: #2E7BFF; color: #fff; }
-[data-theme="dark"] .pill { border: 1px solid transparent; }
-[data-theme="dark"] .pill.ok { background: #173A2B; border-color: #2E6B4C; color: #7EE2A8; }
-[data-theme="dark"] .pill.rec { background: #3A2E16; border-color: #6B5326; color: #F5C451; }
-[data-theme="dark"] .pill.no { background: #25262D; border-color: #3A3B44; color: #A0A0A8; }
+[data-theme="dark"] .pill.ok { background: #173A2B; box-shadow: inset 0 0 0 1px #2E6B4C; color: #7EE2A8; }
+[data-theme="dark"] .pill.rec { background: #3A2E16; box-shadow: inset 0 0 0 1px #6B5326; color: #F5C451; }
+[data-theme="dark"] .pill.no { background: #25262D; box-shadow: inset 0 0 0 1px #3A3B44; color: #A0A0A8; }
 [data-theme="dark"] .badge { background: #173A2B; color: #7EE2A8; }
 [data-theme="dark"] .ai-top-select { background-image: linear-gradient(100deg,#4D6BFE,#3451C9) !important; color: #fff; animation: none; }
 [data-theme="dark"] .ai-top-select option { background: #15161C; color: #F5F5F7; }
@@ -111,7 +110,6 @@
   box-shadow: 0 10px 26px rgba(0,0,0,.20);
 }
 [data-theme="dark"] .appgrid .card:hover { border-color: #3B4766; }
-[data-theme="dark"] .appgrid .ctext { font-size: 10px; line-height: 1.70; }
 
 [data-theme="dark"] .appgrid .card {
   background: #161821;
@@ -165,7 +163,7 @@
 [data-theme="dark"] .rngtxt { color: #EDEDF2; }
 
 /* value sub-components: drying chips, annealing steps, annotations */
-[data-theme="dark"] .dchip { background: #20222A; border: 1px solid #343640; color: #EDEDF2; }
+[data-theme="dark"] .dchip { background: #20222A; box-shadow: inset 0 0 0 1px #343640; color: #EDEDF2; }
 [data-theme="dark"] .dchip span { color: #A0A0A8; }
 [data-theme="dark"] .nozmat { color: #A0A0A8; }
 [data-theme="dark"] .ano { color: #F5F5F7; }

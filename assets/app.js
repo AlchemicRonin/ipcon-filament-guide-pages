@@ -613,12 +613,9 @@
     el.textContent = text;
     if (source === 'DeepSeek') {
       el.classList.add('deepseek');
-      const src = document.createElement('a');
+      const src = document.createElement('span');
       src.className = 'src';
-      src.href = 'https://www.deepseek.com';
-      src.target = '_blank';
-      src.rel = 'noopener';
-      src.textContent = 'DeepSeek ↗';
+      src.textContent = 'DeepSeek';
       el.appendChild(src);
     } else if (source) {
       const src = document.createElement('span');
@@ -767,8 +764,8 @@
       pending.textContent = data.answer || data.error || local;
       pending.classList.add('deepseek');
       if (!REDUCED) pending.animate([{ opacity: .55 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
-      const src = document.createElement('a');
-      src.className = 'src'; src.href = 'https://www.deepseek.com'; src.target = '_blank'; src.rel = 'noopener'; src.textContent = 'DeepSeek ↗';
+      const src = document.createElement('span');
+      src.className = 'src'; src.textContent = 'DeepSeek';
       pending.appendChild(src);
       animatePanelFrom(before);
       scrollPanelToBottom();
@@ -779,8 +776,6 @@
       const src = document.createElement('span'); src.className = 'src'; src.textContent = isCN ? '本地数据 · AI 不可用' : 'Local data · AI unavailable'; pending.appendChild(src);
     }
   }
-
-  chatInput?.addEventListener('focus', scrollPanelToBottom);
 
   chatForm?.addEventListener('submit', e => {
     e.preventDefault();

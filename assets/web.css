@@ -382,3 +382,9 @@ body.web, .hdr, .legendbar, .web-toolbar, .table-viewport, .grid th.corner, .gri
 .ai-panel button:focus-visible, .ai-panel input:focus-visible, .ai-panel select:focus-visible, .ai-panel a:focus-visible {
   outline: 2px solid #044792; outline-offset: 2px;
 }
+
+.web .qr-item { position: relative; display: block; width: 74px; height: 74px; }
+.web .qr-item img { position: absolute; inset: 0; width: 74px; height: 74px; display: block; transition: opacity .42s ease; }
+.web .qr-item .qr-dark { opacity: 0; }
+[data-theme="dark"] .web .qr-item .qr-light { opacity: 0; }
+[data-theme="dark"] .web .qr-item .qr-dark { opacity: 1; }

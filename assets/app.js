@@ -588,6 +588,23 @@
     }
   });
 
+  const themeBtn = document.getElementById('themeToggle');
+  function applyTheme(dark) {
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    if (themeBtn) {
+      themeBtn.textContent = dark ? '☀' : '☾';
+      themeBtn.setAttribute('aria-label', dark ? '切换到亮色主题' : '切换到深色主题');
+    }
+  }
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem('ipcon-theme'); } catch (e) {}
+  applyTheme(savedTheme ? savedTheme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
+  themeBtn?.addEventListener('click', () => {
+    const dark = document.documentElement.dataset.theme !== 'dark';
+    applyTheme(dark);
+    try { localStorage.setItem('ipcon-theme', dark ? 'dark' : 'light'); } catch (e) {}
+  });
+
   const AI_ENDPOINT = document.querySelector('meta[name="ipcon-ai-endpoint"]')?.content?.trim() || '';
   const chatLog = document.getElementById('aiChatLog');
   chatLog?.addEventListener('scroll', updateChatScrollState, { passive: true });

@@ -646,12 +646,33 @@
     quick: 'Key figures', source: 'From the official TDS and product table', noTds: 'TDS unavailable', method: 'Method', site: 'Official overview', table: 'All table parameters', web: 'Product page'
   };
 
+  const TDS_CN = {
+    'Filament Diameter': '线径', 'Net Filament Weight': '净重', 'Filament Length': '长度',
+    'Spool Material': '线盘材质', 'Spool Size': '线盘尺寸',
+    'Density': '密度', 'Shrinkage Rate*': '收缩率', 'Surface Hardness': '表面硬度',
+    'Saturated Water Absorption Rate': '饱和吸水率', 'Melt Index': '熔融指数',
+    'Melting Temperature': '熔点', 'Vicar Softening Temperature': '维卡软化温度',
+    'Heat Deflection Temperature': '热变形温度', 'Relative Thermal Index (RTI）': '相对热指数 (RTI)',
+    'Max Continuous Service': '最高连续使用温度',
+    'Tensile Strength XY': '拉伸强度 XY', 'Tensile Strength Z': '拉伸强度 Z',
+    "Young's Modulus XY": '杨氏模量 XY', "Young's Modulus Z": '杨氏模量 Z',
+    'Breaking Elongation Rate XY': '断裂伸长率 XY', 'Breaking Elongation Rate Z': '断裂伸长率 Z',
+    'Flexural Strength XY': '弯曲强度 XY', 'Flexural Strength Z': '弯曲强度 Z',
+    'Flexural Modulus XY': '弯曲模量 XY', 'Flexural Modulus Z': '弯曲模量 Z',
+    'Impact Strength XY': '冲击强度 XY', 'Impact Strength Z': '冲击强度 Z',
+    'Drying Settings Before Printing': '打印前干燥', 'Printing Temperature and Humidity': '打印温湿度',
+    'Storage Temperature and Humidity': '存储温湿度', 'Compatible Nozzle': '兼容喷嘴',
+    'Nozzle Temperature': '喷嘴温度', 'Bed Temperature': '热床温度', 'Printing Speed': '打印速度',
+    'Part Cooling Fan': '部件冷却风扇', 'Enclosure': '封箱',
+  };
+  const localLabel = label => wikiCN ? (TDS_CN[label] || label) : label;
+
   function num(v) {
     const m = String(v || '').match(/-?\d+(?:\.\d+)?/);
     return m ? Number(m[0]) : null;
   }
   function fact(label, value, method) {
-    return `<div class="wiki-fact"><span>${esc(label)}</span><b>${esc(value || '—')}</b>${method ? `<small>${esc(method)}</small>` : ''}</div>`;
+    return `<div class="wiki-fact"><span>${esc(localLabel(label))}</span><b>${esc(value || '—')}</b>${method ? `<small>${esc(method)}</small>` : ''}</div>`;
   }
   function esc(s) {
     return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -673,7 +694,7 @@
       if (!item) return '';
       const n = num(item.value);
       const pct = n == null ? 0 : Math.max(4, Math.min(100, n / maxFor(label) * 100));
-      return `<div class="wiki-stat"><span>${esc(label)}</span><b>${esc(item.value)}</b><i><em style="width:${pct.toFixed(1)}%"></em></i></div>`;
+      return `<div class="wiki-stat"><span>${esc(localLabel(label))}</span><b>${esc(item.value)}</b><i><em style="width:${pct.toFixed(1)}%"></em></i></div>`;
     }).join('');
   }
   function renderWiki(idx) {
@@ -694,8 +715,9 @@
       </div>
       <div class="wiki-source">${WIKI_L.source}</div>`;
     const section = (title, rows) => rows?.length ? `<section class="wiki-card"><h4>${title}</h4><div class="wiki-facts">${rows.map(r => fact(r.label, r.value, r.method)).join('')}</div></section>` : '';
-    const features = d.features?.length ? `<section class="wiki-card wide"><h4>${WIKI_L.features}</h4><div class="wiki-prose">${d.features.map(x => `<p>${esc(x)}</p>`).join('')}</div></section>` : '';
-    const overview = d.site?.description ? `<section class="wiki-card wide"><h4>${WIKI_L.site}</h4><div class="wiki-prose"><p>${esc(d.site.description)}</p><a class="wiki-inline-link" href="${esc(d.site.url)}" target="_blank" rel="noopener">${WIKI_L.web} ↗</a></div></section>` : '';
+    const featureList = d.features_lang?.[wikiCN ? 'CN' : 'EN'] || d.features || [];
+    const features = featureList?.length ? `<section class="wiki-card wide"><h4>${WIKI_L.features}</h4><div class="wiki-prose">${featureList.map(x => `<p>${esc(x)}</p>`).join('')}</div></section>` : '';
+    const overview = (!wikiCN || /[\u4e00-\u9fff]/.test(d.site?.description || '')) && d.site?.description ? `<section class="wiki-card wide"><h4>${WIKI_L.site}</h4><div class="wiki-prose"><p>${esc(d.site.description)}</p><a class="wiki-inline-link" href="${esc(d.site.url)}" target="_blank" rel="noopener">${WIKI_L.web} ↗</a></div></section>` : '';
     const tableRows = (d.table?.[wikiCN ? 'CN' : 'EN'] || []).map(g => `<section class="wiki-card wide"><h4>${esc(g.label)}</h4><div class="wiki-facts wiki-facts-two">${g.rows.map(r => fact(r.label, r.value, r.detail)).join('')}</div></section>`).join('');
     wikiBody.innerHTML = `
       <section class="wiki-card wide"><h4>${WIKI_L.quick}</h4><div class="wiki-stats">${quickStats(d)}</div></section>

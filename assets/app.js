@@ -29,6 +29,28 @@
     el.appendChild(box);
   }
 
+  function mdInline(text) {
+    const esc = String(text ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let out = esc.replace(/`([^`]+)`/g, '<code>$1</code>');
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    out = out.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+    out = out.replace(/(^|[^*])\*([^*]+)\*(?!\*)/g, '$1<em>$2</em>');
+    out = out.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    return out;
+  }
+  function mdLine(line) {
+    const m = String(line).match(/^(#{1,4})\s+(.*)$/);
+    if (m) return `<strong class="md-head">${mdInline(m[2])}</strong>`;
+    const q = String(line).match(/^>\s?(.*)$/);
+    if (q) return `<span class="md-quote">${mdInline(q[1])}</span>`;
+    const b = String(line).match(/^(\s*)[-*+]\s+(.*)$/);
+    if (b) return `${b[1]}<span class="md-bullet">•</span> ${mdInline(b[2])}`;
+    const n = String(line).match(/^(\s*)(\d+[.)])\s+(.*)$/);
+    if (n) return `${n[1]}<span class="md-num">${n[2]}</span> ${mdInline(n[3])}`;
+    return mdInline(line);
+  }
+
   function makeTypedAnswer(el) {
     el.textContent = '';
     const typed = document.createElement('div');
@@ -47,7 +69,7 @@
           lines[i] = line;
           typed.appendChild(line);
         }
-        if (line.textContent !== parts[i]) line.textContent = parts[i];
+        if (line.dataset.md !== parts[i]) { line.dataset.md = parts[i]; line.innerHTML = mdLine(parts[i]); }
       }
       for (let i = lines.length - 1; i >= parts.length; i--) { lines[i].remove(); lines.pop(); }
     }
@@ -451,6 +473,49 @@
     el._typerCancel = null;
     appendSources(el, sources);
     return { answer, sources };
+  }
+
+  async function requestChatCompletion({ endpoint, question, context, locale, el, fallback = '', timeout = 25000 }) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), timeout);
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, context, stream: true, locale }),
+        signal: ctrl.signal,
+        cache: 'no-store',
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      el.classList.remove('thinking');
+      el.classList.add('deepseek');
+      return await readAIAnswer(res, el, { fallback });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function runChatTurn({ question, context, locale, endpoint, el, fallback, onStatus, onSettled }) {
+    const social = smallTalkReply(question, locale === 'zh');
+    if (social) return { social: true, answer: social };
+    el.classList.add('thinking');
+    try {
+      const result = await requestChatCompletion({ endpoint, question, context, locale, el, fallback });
+      onStatus?.('ok');
+      return result;
+    } catch (e) {
+      el._typerCancel?.();
+      if (el._typerCancel) el._typerCancel = null;
+      el.classList.remove('thinking', 'deepseek');
+      onStatus?.('off');
+      const typer = makeTypedAnswer(el);
+      typer.push(fallback);
+      typer.finish();
+      await typer.done;
+      return { error: e, answer: fallback };
+    } finally {
+      onSettled?.();
+    }
   }
   // ---- local selection assistant ----
   const UI = JSON.parse(document.getElementById('uiData')?.textContent || '{}');
@@ -1076,40 +1141,20 @@
     const social = smallTalkReply(q, wikiCN);
     if (social) { wikiChatMsg('bot', social); return; }
     const pending = wikiChatMsg('bot', wikiCN ? '正在思考…' : 'Thinking…');
-    pending.classList.add('deepseek', 'thinking');
     wikiAskProduct = d.model;
-    try {
-      if (!AI_ENDPOINT) throw new Error('no endpoint');
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 25000);
-      const res = await fetch(AI_ENDPOINT, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, context: wikiContext(d), stream: true, locale: wikiCN ? 'zh' : 'en' }), signal: ctrl.signal,
-      });
-      clearTimeout(timer);
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      if ((res.headers.get('content-type') || '').includes('text/event-stream') && res.body) {
-        pending.classList.remove('thinking');
-        await readAIAnswer(res, pending);
-      } else {
-        const data = await res.json();
-        pending.classList.remove('thinking');
-        pending.classList.add('deepseek');
-        const typer = makeTypedAnswer(pending);
-        typer.push(data.answer || data.error || (wikiCN ? '暂无回答' : 'No answer'));
-        typer.finish();
-        await typer.done;
-        appendSources(pending, data.sources || []);
-      }
-    } catch (e) {
-      pending.classList.remove('thinking', 'deepseek');
-      setAIStatus?.('off', wikiCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
-      const typer = makeTypedAnswer(pending);
-      typer.push(wikiCN ? '暂时无法连接 AI，请先参考上方 TDS 参数。' : 'AI is temporarily unavailable. Please use the TDS above.');
-      typer.finish();
-      await typer.done;
-    }
+    await runChatTurn({
+      question: q, context: wikiContext(d), locale: wikiCN ? 'zh' : 'en',
+      endpoint: AI_ENDPOINT, el: pending,
+      fallback: wikiCN ? '暂时无法连接 AI，请先参考上方 TDS 参数。' : 'AI is temporarily unavailable. Please use the TDS above.',
+      onStatus: state => setAIStatus?.(state, wikiCN
+        ? (state === 'ok' ? 'DeepSeek 可用' : 'DeepSeek 暂不可用')
+        : (state === 'ok' ? 'DeepSeek available' : 'DeepSeek unavailable')),
+      onSettled: () => {
+        wikiChatLog.classList.toggle('is-scrollable', wikiChatLog.scrollHeight - wikiChatLog.clientHeight > 2);
+      },
+    });
   }
+
   wikiModal?.addEventListener('click', e => {
     if (e.target.closest('[data-wiki-close]')) closeWiki();
     const ai = e.target.closest('[data-wiki-ai]');
@@ -1306,22 +1351,13 @@
     });
   }
 
-  async function streamAnswer(res, pending) {
-    const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
-    pending.classList.remove('thinking');
-    pending.classList.add('deepseek');
-    await readAIAnswer(res, pending);
-    setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
-    animatePanelFrom(before);
-    scrollPanelToBottom();
-  }
-
   async function submitQuestion(q) {
     const question = (q || '').trim();
     if (!question) return;
     ensureChat();
     const first = aiPanel ? aiPanel.getBoundingClientRect() : null;
     addChat('user', question, '', false);
+    const local = localAnswer(question);
     const social = smallTalkReply(question, isCN);
     if (social) {
       addChat('bot', social, '', false);
@@ -1330,7 +1366,6 @@
       scrollPanelToBottom();
       return;
     }
-    const local = localAnswer(question);
     if (!AI_ENDPOINT) {
       addChat('bot', local, isCN ? '本地数据' : 'Local data', false);
       animatePanelFrom(first);
@@ -1339,48 +1374,18 @@
       return;
     }
     const pending = addChat('bot', isCN ? '正在思考' : 'Thinking', 'DeepSeek', false);
-    pending.classList.add('thinking');
     animatePanelFrom(first);
     updatePanelScrollbar();
     scrollPanelToBottom();
-    try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 8000);
-      let res;
-      try {
-        res = await fetch(AI_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question, context: buildAIContext(), stream: true, locale: isCN ? 'zh' : 'en' }),
-          signal: ctrl.signal,
-        });
-      } finally { clearTimeout(timer); }
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      if ((res.headers.get('content-type') || '').includes('text/event-stream')) {
-        await streamAnswer(res, pending, local);
-        return;
-      }
-      const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
-      pending.classList.remove('thinking');
-      pending.classList.add('deepseek');
-      await readAIAnswer(res, pending, { fallback: local });
-      setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
-      animatePanelFrom(before);
-      scrollPanelToBottom();
-    } catch (e) {
-      console.warn('AI fallback', e);
-      setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
-      pending._typerCancel?.();
-      pending._typerCancel = null;
-      pending.classList.remove('thinking', 'deepseek');
-      const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
-      const typer = makeTypedAnswer(pending);
-      typer.push(local);
-      typer.finish();
-      await typer.done;
-      animatePanelFrom(before);
-      scrollPanelToBottom();
-    }
+    const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
+    await runChatTurn({
+      question, context: buildAIContext(), locale: isCN ? 'zh' : 'en',
+      endpoint: AI_ENDPOINT, el: pending, fallback: local,
+      onStatus: state => setAIStatus(state, isCN
+        ? (state === 'ok' ? 'DeepSeek 可用' : 'DeepSeek 暂不可用')
+        : (state === 'ok' ? 'DeepSeek available' : 'DeepSeek unavailable')),
+      onSettled: () => { animatePanelFrom(before); scrollPanelToBottom(); },
+    });
   }
 
   chatForm?.addEventListener('submit', e => {

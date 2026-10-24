@@ -568,6 +568,32 @@
     closeAI();
   }
 
+  document.getElementById('exportCsv')?.addEventListener('click', exportSelectedCsv);
+  function exportSelectedCsv() {
+    const ths = [...document.querySelectorAll('.grid th.prod')].filter(th => getComputedStyle(th).display !== 'none');
+    const cols = ths.map(th => ({ col: th.dataset.col, name: (th.querySelector('.pm')?.textContent || '').trim() }));
+    const header = ['属性', ...cols.map(c => c.name)];
+    const lines = [header];
+    document.querySelectorAll('.grid tbody tr').forEach(tr => {
+      const lab = tr.querySelector('td.lab .lm') || tr.querySelector('td.grp');
+      if (!lab) return;
+      const row = [lab.textContent.trim().replace(/\s+/g, ' ')];
+      cols.forEach(c => {
+        const td = tr.querySelector(`td.v[data-col="${c.col}"]`);
+        row.push(td ? td.innerText.trim().replace(/\s+/g, ' ') : '');
+      });
+      lines.push(row);
+    });
+    const cell = v => '"' + String(v).replace(/"/g, '""') + '"';
+    const csv = '\ufeff' + lines.map(r => r.map(cell).join(',')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = isCN ? 'IPCON耗材对比.csv' : 'IPCON-comparison.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
   document.getElementById('assistantBtn')?.addEventListener('click', openAI);
   document.querySelector('.ai-x')?.addEventListener('click', e => {
     e.preventDefault(); e.stopPropagation(); closeAI();
@@ -778,10 +804,6 @@
     }
     const pending = addChat('bot', isCN ? '正在思考' : 'Thinking', 'DeepSeek', false);
     pending.classList.add('thinking');
-    const dots = document.createElement('span');
-    dots.className = 'dots';
-    dots.innerHTML = '<i></i><i></i><i></i>';
-    pending.appendChild(dots);
     animatePanelFrom(first);
     updatePanelScrollbar();
     scrollPanelToBottom();
@@ -801,20 +823,32 @@
       const data = await res.json();
       const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
       pending.classList.remove('thinking');
-      pending.querySelector('.dots')?.remove();
-      pending.textContent = data.answer || data.error || local;
       pending.classList.add('deepseek');
-      if (!REDUCED) pending.animate([{ opacity: .55 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
-      const src = document.createElement('span');
-      src.className = 'src'; src.textContent = 'DeepSeek';
-      pending.appendChild(src);
-      animatePanelFrom(before);
-      scrollPanelToBottom();
+      pending.style.transition = 'opacity .2s ease, transform .2s ease';
+      pending.style.opacity = '0';
+      pending.style.transform = 'translateY(2px)';
+      requestAnimationFrame(() => {
+        pending.textContent = data.answer || data.error || local;
+        const src = document.createElement('span');
+        src.className = 'src'; src.textContent = isCN ? 'DeepSeek · 基于当前表格' : 'DeepSeek · current table';
+        pending.appendChild(src);
+        pending.style.opacity = '1';
+        pending.style.transform = 'translateY(0)';
+        animatePanelFrom(before);
+        scrollPanelToBottom();
+      });
     } catch (e) {
       pending.classList.remove('thinking', 'deepseek');
-      pending.querySelector('.dots')?.remove();
-      pending.textContent = local;
-      const src = document.createElement('span'); src.className = 'src'; src.textContent = isCN ? '本地数据 · AI 不可用' : 'Local data · AI unavailable'; pending.appendChild(src);
+      pending.style.transition = 'opacity .2s ease, transform .2s ease';
+      pending.style.opacity = '0';
+      pending.style.transform = 'translateY(2px)';
+      requestAnimationFrame(() => {
+        pending.textContent = local;
+        const src = document.createElement('span'); src.className = 'src'; src.textContent = isCN ? '本地数据 · AI 不可用' : 'Local data · AI unavailable'; pending.appendChild(src);
+        pending.style.opacity = '1';
+        pending.style.transform = 'translateY(0)';
+        scrollPanelToBottom();
+      });
     }
   }
 
@@ -835,7 +869,18 @@
       build(); apply();
     }
   });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !aiModal.hidden) closeAI(); });
+  document.addEventListener('keydown', e => {
+    if (aiModal.hidden) return;
+    if (e.key === 'Escape') { closeAI(); return; }
+    if (e.key !== 'Tab') return;
+    const focusable = [...aiModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+      .filter(el => !el.disabled && el.getClientRects().length);
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (!aiModal.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
 
   load();
   build();

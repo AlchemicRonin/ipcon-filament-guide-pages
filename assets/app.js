@@ -564,52 +564,6 @@
     closeAI();
   }
 
-  document.getElementById('exportCsv')?.addEventListener('click', exportSelectedCsv);
-  function exportSelectedCsv() {
-    const ths = [...document.querySelectorAll('.grid th.prod')].filter(th => getComputedStyle(th).display !== 'none');
-    const cols = ths.map(th => ({ col: th.dataset.col, name: (th.querySelector('.pm')?.textContent || '').trim() }));
-    const header = ['属性', ...cols.map(c => c.name)];
-    const lines = [header];
-    document.querySelectorAll('.grid tbody tr').forEach(tr => {
-      const lab = tr.querySelector('td.lab .lm') || tr.querySelector('td.grp');
-      if (!lab) return;
-      const row = [lab.textContent.trim().replace(/\s+/g, ' ')];
-      cols.forEach(c => {
-        const td = tr.querySelector(`td.v[data-col="${c.col}"]`);
-        row.push(td ? td.innerText.trim().replace(/\s+/g, ' ') : '');
-      });
-      lines.push(row);
-    });
-    const cell = v => '"' + String(v).replace(/"/g, '""') + '"';
-    const csv = '\ufeff' + lines.map(r => r.map(cell).join(',')).join('\r\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = isCN ? 'IPCON耗材对比.csv' : 'IPCON-comparison.csv';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  }
-
-  document.getElementById('assistantBtn')?.addEventListener('click', openAI);
-  document.querySelector('.ai-x')?.addEventListener('click', e => {
-    e.preventDefault(); e.stopPropagation(); closeAI();
-  });
-  aiModal?.addEventListener('click', e => {
-    if (e.target.closest('[data-ai-close]')) closeAI();
-    const pick = e.target.closest('[data-ai-pick]');
-    if (pick) {
-      selected.add(+pick.dataset.aiPick);
-      build(); apply();
-      closeAI();
-    }
-    const prio = e.target.closest('[data-ai-prio]');
-    if (prio) {
-      const k = prio.dataset.aiPrio;
-      if (aiState.has(k)) aiState.delete(k); else aiState.add(k);
-      buildAIPrios(); renderAI(); syncBrandPhase();
-    }
-  });
-
   const themeBtn = document.getElementById('themeToggle');
   function applyTheme(dark) {
     const root = document.documentElement;

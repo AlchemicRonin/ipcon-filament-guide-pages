@@ -167,7 +167,9 @@ html.modal-locked, body.modal-locked { overflow: hidden !important; }
 .ai-chat-log.is-scrollable { -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%); mask-image: linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%); }
 .ai-chat-log::-webkit-scrollbar-thumb { background: #D3DDEA; border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
 .ai-chat-log::-webkit-scrollbar-track { background: transparent; }
-.ai-x { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: #EFF2F7; color: #3A3A3C; font-size: 20px; line-height: 1; cursor: pointer; z-index: 30; }
+.ai-x { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border: 0; border-radius: 50%; background: #EFF2F7; color: #3A3A3C; font-size: 0; line-height: 0; padding: 0; cursor: pointer; z-index: 30; }
+.ai-x::before, .ai-x::after { content: ""; position: absolute; top: 50%; left: 50%; width: 13px; height: 1.8px; border-radius: 2px; background: currentColor; transform: translate(-50%, -50%) rotate(45deg); }
+.ai-x::after { transform: translate(-50%, -50%) rotate(-45deg); }
 .ai-x:hover { background: #E3E9F2; }
 .ai-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: .8px; color: #044792; }
 .ai-panel h3 { margin: 6px 0 4px; font-size: 28px; letter-spacing: -.6px; color: #0B0B0F; }

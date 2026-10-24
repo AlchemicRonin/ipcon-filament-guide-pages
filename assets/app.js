@@ -754,11 +754,17 @@
     updatePanelScrollbar();
     scrollPanelToBottom();
     try {
-      const res = await fetch(AI_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, context: buildAIContext() }),
-      });
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+      let res;
+      try {
+        res = await fetch(AI_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, context: buildAIContext() }),
+          signal: ctrl.signal,
+        });
+      } finally { clearTimeout(timer); }
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       const before = aiPanel ? aiPanel.getBoundingClientRect() : null;

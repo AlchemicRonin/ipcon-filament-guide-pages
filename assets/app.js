@@ -417,11 +417,12 @@
     const dh = last.height - first.height;
     const dw = last.width - first.width;
     if (Math.abs(dh) < 2 && Math.abs(dw) < 2) return;
+    aiPanel.getAnimations().forEach(a => a.cancel());
     aiPanel.style.overflow = 'hidden';
-    const anim = aiPanel.animate([
+    const animKeep = aiPanel.animate([
       { height: first.height + 'px', width: first.width + 'px' },
       { height: last.height + 'px', width: last.width + 'px' }
-    ], { duration: 280, easing: 'cubic-bezier(.2,.7,.2,1)' });
+    ], { duration: 360, easing: 'cubic-bezier(.2,.7,.2,1)' });
     anim.onfinish = () => {
       aiPanel.style.height = '';
       aiPanel.style.width = '';
@@ -773,7 +774,7 @@
         shown = Math.min(target.length, shown + add);
         node.nodeValue = target.slice(0, shown);
         const now = performance.now();
-        if (rectBefore && now - lastPanel > 300) { lastPanel = now; animatePanelFrom(rectBefore); }
+        if (rectBefore && now - lastPanel > 180) { lastPanel = now; animatePanelFrom(rectBefore); }
         if (now - lastScroll > 55) { lastScroll = now; scrollPanelToBottom(); }
         timer = setTimeout(step, 16);
       } else if (finished) {

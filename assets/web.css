@@ -394,3 +394,9 @@ body.web, .hdr, .legendbar, .web-toolbar, .table-viewport, .grid th.corner, .gri
   from { opacity: 0; transform: translateY(3px); filter: blur(2px); }
   to { opacity: 1; transform: none; filter: blur(0); }
 }
+
+.ai-result { animation: aiResultIn .34s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes aiResultIn {
+  from { opacity: 0; transform: translateY(6px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}

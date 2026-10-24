@@ -1144,7 +1144,7 @@
     const table = (d.table?.[wikiCN ? 'CN' : 'EN'] || []).map(g => g.rows.map(r => `${r.label}${r.detail ? ' ' + r.detail : ''}: ${r.value}`).join('\n')).join('\n');
     const fl = d.features_lang?.[wikiCN ? 'CN' : 'EN'];
     const feat = Array.isArray(fl) ? fl : [...(fl?.usp || []), ...(fl?.apps || [])];
-    return `PRODUCT: ${d.model} / ${d.color}\nTDS:\n${facts}\nTABLE:\n${table}\nFEATURES:\n${feat.join('\n')}`;
+    return `PRODUCT: ${d.model} / ${d.color}\nSITE: ${d.site?.url || ''}\nTDS:\n${facts}\nTABLE:\n${table}\nFEATURES:\n${feat.join('\n')}`;
   }
   function wikiChatMsg(role, text, source) {
     const el = document.createElement('div');
@@ -1386,7 +1386,7 @@
     if (!w) return base;
     const facts = [...(w.info || []), ...(w.physical || []), ...(w.mechanical || []), ...(w.settings || [])]
       .map(x => `${x.label}: ${x.value}${x.method ? ` (${x.method})` : ''}`).join('\n');
-    return `${base}\n\nTDS ${w.model} (${w.color}):\n${facts}\n${(w.features || []).join('\n')}`;
+    return `${base}\n\nPRODUCT: ${w.model} / ${w.color}\nSITE: ${w.site?.url || ''}\nTDS ${w.model} (${w.color}):\n${facts}\n${(w.features || []).join('\n')}`;
   }
 
   function ensureChat() {

@@ -610,7 +610,7 @@
         .map(p => `${p.short || p.label} ${fmt(p.values[r.idx], p.unit)}`).join(' · ') || '综合评分';
       return `<div class="ai-result ${i === 0 ? 'top' : ''}" data-idx="${r.idx}">
         <div class="ai-rank">${i + 1}</div>
-        <div class="ai-r-main"><div class="ai-r-name" style="color:${ths[r.idx]?.querySelector('.pm')?.style.getPropertyValue('--product-color') || 'inherit'}">${r.p.model}<small style="color:${ths[r.idx]?.querySelector('.pc')?.style.getPropertyValue('--product-color') || 'inherit'}">${all[r.idx]?.color || r.p.color}</small></div>
+        <div class="ai-r-main"><div class="ai-r-name"><i class="ai-r-dot" style="background:${ths[r.idx]?.querySelector('.pm')?.style.getPropertyValue('--product-color') || 'var(--muted)'}"></i><b>${r.p.model}</b><small>${all[r.idx]?.color || r.p.color}</small></div>
         <div class="ai-r-stats">${stats}</div></div>
         <div class="ai-score">${r.score}</div>
         <button class="ai-add" type="button" data-ai-pick="${r.idx}">${UI.ADD || '加入对比'}</button>

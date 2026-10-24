@@ -49,7 +49,7 @@
 [data-theme="dark"] .ai-add { background: var(--c-1b1d26); color: var(--c-8fb4ff); border-color: var(--c-3a5a90); }
 [data-theme="dark"] .ai-empty { background: var(--c-1b1d26); border-color: var(--c-343640); color: var(--c-a0a0a8); }
 [data-theme="dark"] .ai-chat-form input { background: var(--c-15161c); border-color: var(--c-343640); color: var(--c-f5f5f7); }
-[data-theme="dark"] .ai-chat-form input::placeholder { color: var(--c-777b85); }
+[data-theme="dark"] .ai-chat-form input::placeholder { color: transparent; }
 [data-theme="dark"] .ai-chat-suggest button { background: var(--c-1b1d26); border-color: var(--c-343640); color: var(--c-d8d8de); }
 [data-theme="dark"] .ai-msg.bot { background: var(--c-171a24); border-color: var(--c-2e3140); color: var(--c-e8e8ec); }
 

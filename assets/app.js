@@ -1226,20 +1226,37 @@
       if (em) em.textContent = label;
     });
   }
+  let statusAttempts = 0;
+  let statusRetry = null;
+  let statusChecking = false;
   async function checkAIStatus() {
     if (!AI_ENDPOINT) { setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable'); return; }
+    if (statusChecking) return;
+    statusChecking = true;
     setAIStatus('checking', isCN ? '检测中' : 'Checking');
     try {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 5000);
+      const timer = setTimeout(() => ctrl.abort(), 8000);
       const res = await fetch(new URL('health', AI_ENDPOINT), { cache: 'no-store', signal: ctrl.signal });
       clearTimeout(timer);
       if (!res.ok) throw new Error('health');
       const data = await res.json();
-      if (data.ok && data.deepseek) setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
-      else setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
+      if (data.ok && data.deepseek) {
+        statusAttempts = 0;
+        setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
+      } else {
+        setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
+      }
     } catch (e) {
-      setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
+      statusAttempts += 1;
+      if (statusAttempts < 3) {
+        clearTimeout(statusRetry);
+        statusRetry = setTimeout(checkAIStatus, 1200 * statusAttempts);
+      } else {
+        setAIStatus('off', isCN ? 'DeepSeek 暂不可用' : 'DeepSeek unavailable');
+      }
+    } finally {
+      statusChecking = false;
     }
   }
 
@@ -1250,7 +1267,7 @@
   const chatSuggest = document.getElementById('aiChatSuggest');
   const isCN = (document.documentElement.lang || 'zh').toLowerCase().startsWith('zh');
   checkAIStatus();
-  setInterval(checkAIStatus, 60000);
+  setInterval(() => { statusAttempts = 0; checkAIStatus(); }, 60000);
 
   function updateChatScrollState() {
     if (chatLog) chatLog.classList.toggle('is-scrollable', chatLog.scrollHeight - chatLog.clientHeight > 2);

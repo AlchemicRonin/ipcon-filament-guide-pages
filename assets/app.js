@@ -747,7 +747,7 @@
 
   function ensureChat() {
     if (!chatLog || chatLog.children.length) return;
-    addChat('bot', isCN ? '可以直接问表内数据，比如：耐温最高的三款？最韧的是哪几款？' : 'Ask about the table data, e.g. Top 3 for heat? Which are toughest?', isCN ? '本地数据' : 'Local data');
+    addChat('bot', isCN ? '可以直接问表内数据，比如：耐温最高的三款？最韧的是哪几款？' : 'Ask about the table data, e.g. Top 3 for heat? Which are toughest?', isCN ? 'IPCON 数据' : 'IPCON data');
     chatSuggest.innerHTML = '';
     (UI.CHAT_SUGGEST || []).forEach(text => {
       const b = document.createElement('button');
@@ -821,7 +821,7 @@
     typer.finish();
     await typer.done;
     const src = document.createElement('span');
-    src.className = 'src'; src.textContent = isCN ? 'DeepSeek · 基于当前表格' : 'DeepSeek · current table';
+    src.className = 'src'; src.textContent = isCN ? '基于当前产品数据' : 'Based on current product data';
     pending.appendChild(src);
     animatePanelFrom(before);
     scrollPanelToBottom();
@@ -872,7 +872,7 @@
       typer.finish();
       await typer.done;
       const src = document.createElement('span');
-      src.className = 'src'; src.textContent = isCN ? 'DeepSeek · 基于当前表格' : 'DeepSeek · current table';
+      src.className = 'src'; src.textContent = isCN ? '基于当前产品数据' : 'Based on current product data';
       pending.appendChild(src);
       animatePanelFrom(before);
       scrollPanelToBottom();
@@ -883,7 +883,7 @@
       typer.push(local);
       typer.finish();
       await typer.done;
-      const src = document.createElement('span'); src.className = 'src'; src.textContent = isCN ? '本地数据 · AI 不可用' : 'Local data · AI unavailable'; pending.appendChild(src);
+      const src = document.createElement('span'); src.className = 'src'; src.textContent = isCN ? '数据来自当前产品表' : 'Data from the current product table'; pending.appendChild(src);
       animatePanelFrom(before);
       scrollPanelToBottom();
     }

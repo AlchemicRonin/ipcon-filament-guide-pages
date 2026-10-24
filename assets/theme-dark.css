@@ -198,3 +198,13 @@ html[data-theme="dark"] { background: var(--c-0b0c10); }
   opacity: 1;
   box-shadow: none;
 }
+
+[data-theme="dark"] .wiki-card { background: var(--c-161821); border-color: var(--c-2a2e3a); }
+[data-theme="dark"] .wiki-btn { background: var(--c-1a1c22); border-color: var(--c-343640); color: var(--c-ededeff); }
+[data-theme="dark"] .wiki-btn.primary { background: var(--ds); border-color: var(--ds); color: var(--c-fff); }
+[data-theme="dark"] .wiki-stat i { background: var(--c-2a2c35); }
+[data-theme="dark"] .wiki-stat em { background: var(--c-8fb4ff); }
+[data-theme="dark"] .wiki-title h3,
+[data-theme="dark"] .wiki-fact b,
+[data-theme="dark"] .wiki-stat b,
+[data-theme="dark"] .wiki-prose p { color: var(--c-ededeff); }

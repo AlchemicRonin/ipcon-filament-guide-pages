@@ -423,7 +423,7 @@
       { height: first.height + 'px', width: first.width + 'px' },
       { height: last.height + 'px', width: last.width + 'px' }
     ], { duration: 360, easing: 'cubic-bezier(.2,.7,.2,1)' });
-    anim.onfinish = () => {
+    animKeep.onfinish = () => {
       aiPanel.style.height = '';
       aiPanel.style.width = '';
       aiPanel.style.overflow = '';
@@ -625,6 +625,149 @@
       });
     });
   })();
+  const WIKI = JSON.parse(document.getElementById('wikiData')?.textContent || '{}');
+  const wikiModal = document.getElementById('wikiModal');
+  const wikiHead = document.getElementById('wikiHead');
+  const wikiBody = document.getElementById('wikiBody');
+  const wikiCN = (document.documentElement.lang || 'zh').toLowerCase().startsWith('zh');
+  let wikiIndex = -1;
+  let wikiReturnFocus = null;
+  let wikiCloseTimer = null;
+  let wikiAskProduct = null;
+
+  const WIKI_L = wikiCN ? {
+    info: '产品信息', physical: '物理性能', mechanical: '机械性能', settings: '推荐打印设置',
+    features: '特点与应用', tds: '下载 TDS', ask: '问 AI 这款材料', close: '关闭',
+    quick: '关键参数', source: '数据来自官方 TDS 与产品表', noTds: '暂无 TDS', method: '测试方法', site: '官网介绍', table: '表格全部参数', web: '官网产品页'
+  } : {
+    info: 'Product information', physical: 'Physical properties', mechanical: 'Mechanical properties',
+    settings: 'Recommended printing settings', features: 'Features & applications',
+    tds: 'Download TDS', ask: 'Ask AI about this material', close: 'Close',
+    quick: 'Key figures', source: 'From the official TDS and product table', noTds: 'TDS unavailable', method: 'Method', site: 'Official overview', table: 'All table parameters', web: 'Product page'
+  };
+
+  function num(v) {
+    const m = String(v || '').match(/-?\d+(?:\.\d+)?/);
+    return m ? Number(m[0]) : null;
+  }
+  function fact(label, value, method) {
+    return `<div class="wiki-fact"><span>${esc(label)}</span><b>${esc(value || '—')}</b>${method ? `<small>${esc(method)}</small>` : ''}</div>`;
+  }
+  function esc(s) {
+    return String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+  function maxFor(label) {
+    let mx = 0;
+    Object.values(WIKI).forEach(w => {
+      [...(w.physical || []), ...(w.mechanical || [])].forEach(x => {
+        if (x.label === label) { const n = num(x.value); if (n != null) mx = Math.max(mx, n); }
+      });
+    });
+    return mx || 1;
+  }
+  function quickStats(w) {
+    const labels = ['Density', 'Heat Deflection Temperature', 'Tensile Strength XY', 'Flexural Modulus XY', 'Impact Strength XY', 'Saturated Water Absorption Rate'];
+    const all = [...(w.physical || []), ...(w.mechanical || [])];
+    return labels.map(label => {
+      const item = all.find(x => x.label === label);
+      if (!item) return '';
+      const n = num(item.value);
+      const pct = n == null ? 0 : Math.max(4, Math.min(100, n / maxFor(label) * 100));
+      return `<div class="wiki-stat"><span>${esc(label)}</span><b>${esc(item.value)}</b><i><em style="width:${pct.toFixed(1)}%"></em></i></div>`;
+    }).join('');
+  }
+  function renderWiki(idx) {
+    const p = PRODUCTS[idx];
+    const d = p && WIKI[p.model];
+    if (!d) return;
+    const card = document.querySelectorAll('.appgrid .card')[idx];
+    const color = card?.querySelector('.cmodel')?.style.getPropertyValue('--swatch-color') || '#7A7A80';
+    const tds = d.tds ? encodeURI(d.tds) : '';
+    wikiHead.innerHTML = `
+      <div class="wiki-title-row">
+        <div class="wiki-title"><i style="background:${color}"></i><h3 id="wikiTitle">${esc(d.model)}</h3><span>${esc(d.color)}</span></div>
+        <div class="wiki-actions">
+          ${tds ? `<a class="wiki-btn" href="${tds}" target="_blank" rel="noopener">${WIKI_L.tds} ↗</a>` : `<span class="wiki-btn disabled">${WIKI_L.noTds}</span>`}
+          ${d.site?.url ? `<a class="wiki-btn" href="${esc(d.site.url)}" target="_blank" rel="noopener">${WIKI_L.web} ↗</a>` : ''}
+          <button class="wiki-btn primary" type="button" data-wiki-ai="${esc(d.model)}">${WIKI_L.ask}</button>
+        </div>
+      </div>
+      <div class="wiki-source">${WIKI_L.source}</div>`;
+    const section = (title, rows) => rows?.length ? `<section class="wiki-card"><h4>${title}</h4><div class="wiki-facts">${rows.map(r => fact(r.label, r.value, r.method)).join('')}</div></section>` : '';
+    const features = d.features?.length ? `<section class="wiki-card wide"><h4>${WIKI_L.features}</h4><div class="wiki-prose">${d.features.map(x => `<p>${esc(x)}</p>`).join('')}</div></section>` : '';
+    const overview = d.site?.description ? `<section class="wiki-card wide"><h4>${WIKI_L.site}</h4><div class="wiki-prose"><p>${esc(d.site.description)}</p><a class="wiki-inline-link" href="${esc(d.site.url)}" target="_blank" rel="noopener">${WIKI_L.web} ↗</a></div></section>` : '';
+    const tableRows = (d.table?.[wikiCN ? 'CN' : 'EN'] || []).map(g => `<section class="wiki-card wide"><h4>${esc(g.label)}</h4><div class="wiki-facts wiki-facts-two">${g.rows.map(r => fact(r.label, r.value, r.detail)).join('')}</div></section>`).join('');
+    wikiBody.innerHTML = `
+      <section class="wiki-card wide"><h4>${WIKI_L.quick}</h4><div class="wiki-stats">${quickStats(d)}</div></section>
+      ${overview}
+      <div class="wiki-grid">
+        ${section(WIKI_L.info, d.info)}
+        ${section(WIKI_L.settings, d.settings)}
+        ${section(WIKI_L.physical, d.physical)}
+        ${section(WIKI_L.mechanical, d.mechanical)}
+        ${features}
+        ${tableRows}
+      </div>`;
+  }
+  function openWiki(idx) {
+    if (wikiCloseTimer) { clearTimeout(wikiCloseTimer); wikiCloseTimer = null; }
+    wikiIndex = idx;
+    renderWiki(idx);
+    wikiReturnFocus = document.activeElement;
+    wikiModal.hidden = false;
+    requestAnimationFrame(() => wikiModal.classList.add('open'));
+    lockPage();
+    setTimeout(() => wikiModal.querySelector('.wiki-btn.primary')?.focus(), 50);
+  }
+  function closeWiki() {
+    if (wikiModal.hidden) return;
+    wikiModal.classList.remove('open');
+    const delay = REDUCED ? 0 : 320;
+    wikiCloseTimer = setTimeout(() => {
+      wikiModal.hidden = true;
+      wikiCloseTimer = null;
+      unlockPage();
+      wikiReturnFocus?.focus?.();
+    }, delay);
+  }
+  document.querySelectorAll('.appgrid .card[data-wiki]').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('a, .card-x, input, button')) return;
+      openWiki(Number(card.dataset.wiki));
+    });
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openWiki(Number(card.dataset.wiki)); }
+    });
+  });
+  wikiModal?.addEventListener('click', e => {
+    if (e.target.closest('[data-wiki-close]')) closeWiki();
+    const ai = e.target.closest('[data-wiki-ai]');
+    if (ai) {
+      const model = ai.dataset.wikiAi;
+      wikiAskProduct = model;
+      closeWiki();
+      setTimeout(() => {
+        openAI();
+        setTimeout(() => {
+          if (!chatInput || !chatForm) return;
+          chatInput.value = wikiCN ? `请介绍 ${model} 的 TDS 关键参数、应用场景和打印注意事项` : `Summarize the TDS, applications and printing tips for ${model}`;
+          chatForm.requestSubmit();
+        }, 400);
+      }, 260);
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (wikiModal?.hidden) return;
+    if (e.key === 'Escape') { closeWiki(); return; }
+    if (e.key !== 'Tab') return;
+    const focusable = [...wikiModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+      .filter(el => !el.disabled && el.getClientRects().length);
+    if (!focusable.length) return;
+    const first = focusable[0], last = focusable[focusable.length - 1];
+    if (!wikiModal.contains(document.activeElement)) { e.preventDefault(); first.focus(); return; }
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
   const AI_ENDPOINT = document.querySelector('meta[name="ipcon-ai-endpoint"]')?.content?.trim() || '';
   const aiDsStatus = document.getElementById('aiDsStatus');
   function setAIStatus(state, label) {
@@ -766,9 +909,14 @@
   }
 
   function buildAIContext() {
-    return PRODUCTS.map(p =>
+    const base = PRODUCTS.map(p =>
       `${p.model} | color:${p.color} | HDT:${p.hdt} | strength:${p.strength} | stiffness:${p.stiffness} | toughness:${p.toughness} | water:${p.water} | shrink:${p.shrink} | density:${p.density} | MFI:${p.mfi} | AMS:${p.ams}`
     ).join('\n');
+    const w = wikiAskProduct ? WIKI[wikiAskProduct] : null;
+    if (!w) return base;
+    const facts = [...(w.info || []), ...(w.physical || []), ...(w.mechanical || []), ...(w.settings || [])]
+      .map(x => `${x.label}: ${x.value}${x.method ? ` (${x.method})` : ''}`).join('\n');
+    return `${base}\n\nTDS ${w.model} (${w.color}):\n${facts}\n${(w.features || []).join('\n')}`;
   }
 
   function ensureChat() {
@@ -788,10 +936,11 @@
     el.textContent = '';
     const node = document.createTextNode('');
     el.appendChild(node);
-    let target = '', shown = 0, finished = false, timer = null, resolveDone, lastPanel = 0;
+    let target = '', shown = 0, finished = false, timer = null, resolveDone, lastPanel = 0, cancelled = false;
     const done = new Promise(r => { resolveDone = r; });
     let lastScroll = 0;
     function step() {
+      if (cancelled) return;
       timer = null;
       if (shown < target.length) {
         const rectBefore = aiPanel ? aiPanel.getBoundingClientRect() : null;
@@ -809,9 +958,11 @@
         timer = setTimeout(step, 35);
       }
     }
+    function cancel() { cancelled = true; if (timer) clearTimeout(timer); timer = null; }
     return {
-      push(t) { if (!t) return; target += t; if (!timer) step(); },
-      finish() { finished = true; if (!timer) step(); },
+      push(t) { if (cancelled || !t) return; target += t; if (!timer) step(); },
+      finish() { if (cancelled) return; finished = true; if (!timer) step(); },
+      cancel,
       done,
     };
   }
@@ -825,9 +976,17 @@
     pending.classList.remove('thinking');
     pending.classList.add('deepseek');
     const typer = makeTypewriter(pending);
+    pending._typerCancel = typer.cancel;
     while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+      let timeoutId;
+      const timed = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('stream timeout')), 12000);
+      });
+      let part;
+      try { part = await Promise.race([reader.read(), timed]); }
+      finally { clearTimeout(timeoutId); }
+      if (part.done) break;
+      const value = part.value;
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
@@ -846,6 +1005,7 @@
     if (!answer.trim()) throw new Error('empty stream');
     typer.finish();
     await typer.done;
+    pending._typerCancel = null;
     const src = document.createElement('span');
     src.className = 'src'; src.textContent = isCN ? '基于当前产品数据' : 'Based on current product data';
     pending.appendChild(src);
@@ -905,6 +1065,9 @@
       animatePanelFrom(before);
       scrollPanelToBottom();
     } catch (e) {
+      console.warn('AI fallback', e);
+      pending._typerCancel?.();
+      pending._typerCancel = null;
       pending.classList.remove('thinking', 'deepseek');
       const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
       const typer = makeTypewriter(pending);

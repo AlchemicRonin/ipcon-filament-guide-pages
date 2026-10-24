@@ -315,3 +315,4 @@ html.modal-locked, body.modal-locked { overflow: hidden !important; }
   .web .grid th.prod, .web .grid td.v { width: 120px; min-width: 120px; max-width: 120px; }
   .web .web-guide h2 { font-size: 23px; }
 }
+html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after { transition: none !important; }

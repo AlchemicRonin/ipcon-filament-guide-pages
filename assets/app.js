@@ -590,11 +590,14 @@
 
   const themeBtn = document.getElementById('themeToggle');
   function applyTheme(dark) {
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    const root = document.documentElement;
+    root.classList.add('theme-switching');
+    root.dataset.theme = dark ? 'dark' : 'light';
     if (themeBtn) {
       themeBtn.textContent = dark ? '☀' : '☾';
       themeBtn.setAttribute('aria-label', dark ? '切换到亮色主题' : '切换到深色主题');
     }
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-switching')));
   }
   let savedTheme = null;
   try { savedTheme = localStorage.getItem('ipcon-theme'); } catch (e) {}

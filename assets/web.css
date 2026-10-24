@@ -269,14 +269,8 @@ html.modal-locked, body.modal-locked { overflow: hidden !important; }
 
 @media (max-width: 1100px) {
   .web .hdr { padding: 42px 24px 18px; }
-  .web .hdr-theme { position: absolute; top: 16px; right: 104px; z-index: 6; width: auto; min-width: 66px; height: 26px; border: 1px solid #D9DEE8; border-radius: 999px; background: #fff; color: #3A3A3C; font-size: 11px; font-weight: 600; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 0 10px; }
-.web .hdr-theme .theme-ico { width: 13px; height: 13px; display: flex; align-items: center; justify-content: center; }
-.web .hdr-theme svg { width: 13px; height: 13px; display: block; }
-.web .hdr-theme .ico-sun { display: none; }
-[data-theme="dark"] .web .hdr-theme .ico-moon { display: none; }
-[data-theme="dark"] .web .hdr-theme .ico-sun { display: block; }
-.web .hdr-theme:hover { border-color: #044792; color: #044792; }
-.web .hdr-lang { top: 12px; right: 24px; }
+  .web .hdr-theme { top: 12px; right: 100px; min-width: 62px; font-size: 10.5px; }
+  .web .hdr-lang { top: 12px; right: 24px; }
   .web .legendbar, .web .web-toolbar, .web .foot { padding-left: 24px; padding-right: 24px; }
   .web .web-guide { padding-left: 24px; padding-right: 24px; }
   .web .table-shell { margin: 0 24px; max-width: calc(100% - 48px); }
@@ -287,13 +281,7 @@ html.modal-locked, body.modal-locked { overflow: hidden !important; }
 
 @media (max-width: 760px) {
   .web .hdr { padding: 38px 16px 14px; }
-  .web .hdr-theme { position: absolute; top: 16px; right: 104px; z-index: 6; width: auto; min-width: 66px; height: 26px; border: 1px solid #D9DEE8; border-radius: 999px; background: #fff; color: #3A3A3C; font-size: 11px; font-weight: 600; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 0 10px; }
-.web .hdr-theme .theme-ico { width: 13px; height: 13px; display: flex; align-items: center; justify-content: center; }
-.web .hdr-theme svg { width: 13px; height: 13px; display: block; }
-.web .hdr-theme .ico-sun { display: none; }
-[data-theme="dark"] .web .hdr-theme .ico-moon { display: none; }
-[data-theme="dark"] .web .hdr-theme .ico-sun { display: block; }
-.web .hdr-theme:hover { border-color: #044792; color: #044792; }
+  .web .hdr-theme { top: 10px; right: 72px; min-width: 58px; height: 24px; padding: 0 8px; font-size: 10.5px; }
 .web .hdr-lang { top: 10px; right: 16px; font-size: 11px; padding: 4px 9px; }
   .web .hr { display: none; }
   .web .mark { height: 42px; margin-right: 12px; }

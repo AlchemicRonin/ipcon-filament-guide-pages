@@ -1,4 +1,3 @@
-
 (() => {
   const table = document.querySelector('table.grid');
   if (!table) return;
@@ -134,7 +133,6 @@
       requestAnimationFrame(frame);
     });
   }
-
   const ths = [...table.querySelectorAll('th.prod')];
   ths.forEach((th, i) => {
     const btn = document.createElement('button');
@@ -329,8 +327,6 @@
 
   const langHref = document.querySelector('.hdr-lang');
   if (langHref && location.search) langHref.href = langHref.getAttribute('href') + location.search;
-
-
   // ---- local selection assistant ----
   const UI = JSON.parse(document.getElementById('uiData')?.textContent || '{}');
   const PRODUCTS = JSON.parse(document.getElementById('productData')?.textContent || '[]');
@@ -654,7 +650,6 @@
       });
     });
   })();
-
   const AI_ENDPOINT = document.querySelector('meta[name="ipcon-ai-endpoint"]')?.content?.trim() || '';
   const chatLog = document.getElementById('aiChatLog');
   chatLog?.addEventListener('scroll', updateChatScrollState, { passive: true });

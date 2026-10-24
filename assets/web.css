@@ -66,12 +66,13 @@ body.web { width: 100% !important; max-width: 100vw !important; min-width: 0; ov
 .web .tb-pick.off { opacity: .45; }
 
 .web .table-shell { display: inline-block; vertical-align: top; position: relative; width: fit-content; max-width: calc(100% - 64px); margin: 0 32px; }
+.web .table-scroll { position: relative; }
 .web .table-shade { position: absolute; opacity: 0; pointer-events: none; transition: opacity .24s ease; z-index: 8; }
 .web .table-shade.show { opacity: 1; }
-.web .table-shade-right { top: 0; right: 0; bottom: 0; width: 22px; box-shadow: inset -16px 0 16px -16px rgba(0,0,0,.34); background: linear-gradient(to left, rgba(0,0,0,.035), transparent 22px); }
-.web .table-shade-bottom { left: 0; right: 0; bottom: 0; height: 22px; box-shadow: inset 0 -16px 16px -16px rgba(0,0,0,.30); background: linear-gradient(to top, rgba(0,0,0,.03), transparent 22px); }
-.web .table-hint { min-height: 16px; padding: 7px 2px 0; font-size: 10.5px; color: #8E8E93; opacity: 0; transition: opacity .24s ease; }
-.web .table-hint.show { opacity: 1; }
+.web .table-shade-right { top: 0; right: 0; bottom: 0; width: 16px; box-shadow: inset -8px 0 10px -10px rgba(0,0,0,.24); background: linear-gradient(to left, #F2F2F7 0, rgba(242,242,247,0) 4px), linear-gradient(to left, rgba(0,0,0,.09), transparent 14px); }
+.web .table-shade-bottom { left: 0; right: 0; bottom: 25px; height: 16px; box-shadow: inset 0 -8px 10px -10px rgba(0,0,0,.22); background: linear-gradient(to top, #F2F2F7 0, rgba(242,242,247,0) 4px), linear-gradient(to top, rgba(0,0,0,.08), transparent 14px); }
+.web .table-hint { display: none; position: relative; z-index: 12; width: fit-content; max-width: 100%; margin: 8px 0 0; padding: 6px 11px 6px 10px; border: 1px solid #E1E1E6; border-radius: 999px; background: #fff; color: #6E6E73; font-size: 10.5px; line-height: 1.3; opacity: 0; transform: translateY(2px); transition: opacity .24s ease, transform .24s ease; }
+.web .table-hint.show { display: inline-block; opacity: 1; transform: none; }
 .web .table-viewport {
   width: 100%; max-width: none; margin: 0; max-height: calc(100vh - 210px); overflow: auto;
   border: 0; border-radius: 0; background: #fff;
@@ -110,7 +111,7 @@ body.web { width: 100% !important; max-width: 100vw !important; min-width: 0; ov
 .web .appshead { padding: 14px 18px 10px; }
 .web .appgrid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); padding: 0 18px 18px; }
 .web .appgrid .cmodel::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; background: var(--swatch-color, var(--product-color, var(--muted))); border: 1px solid rgba(0,0,0,.10); vertical-align: -1px; }
-.web .appgrid .card { position: relative; transition: opacity .32s ease, transform .32s cubic-bezier(.2,.7,.2,1), box-shadow .32s ease; will-change: opacity, transform; }
+.web .appgrid .card { background: #fff; background: color-mix(in oklab, var(--swatch-color, #fff) 5%, #fff); border-color: color-mix(in srgb, var(--swatch-color, #E5E5EA) 26%, #E5E5EA); position: relative; transition: opacity .32s ease, transform .32s cubic-bezier(.2,.7,.2,1), box-shadow .32s ease, border-color .28s ease, background-color .32s ease; will-change: opacity, transform; }
 .web .appgrid .card .card-x { position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; border: 0; border-radius: 50%; background: #EEF2F8; color: #6E6E73; font-size: 0; line-height: 0; padding: 0; cursor: pointer; opacity: 0; transition: opacity .16s ease, background .16s ease, color .16s ease; z-index: 3; }
 .web .appgrid .card .card-x::before, .web .appgrid .card .card-x::after { content: ""; position: absolute; top: 50%; left: 50%; width: 7px; height: 1.5px; border-radius: 2px; background: currentColor; transform: translate(-50%, -50%) rotate(45deg); }
 .web .appgrid .card .card-x::after { transform: translate(-50%, -50%) rotate(-45deg); }
@@ -136,8 +137,8 @@ body.web { width: 100% !important; max-width: 100vw !important; min-width: 0; ov
 .web .tb-actions button:hover { transform: translateY(-1px); background: #F5F8FD; }
 .web .grid th.prod { transition: color .32s ease; }
 .web .grid th.prod:hover { color: #044792; }
-.web .grid tbody tr td { transition: box-shadow .16s ease; }
-.web .grid tbody tr:hover td { box-shadow: inset 0 0 0 9999px rgba(4,71,146,.032); }
+.web .grid tbody tr td { transition: box-shadow .28s ease; }
+.web .grid tbody tr:hover td { box-shadow: inset 0 0 0 9999px rgba(4,71,146,.055); }
 .web .grid td.lab, .web .grid td.grp, .web .grid th.corner { background-clip: padding-box; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -345,4 +346,25 @@ body.web, .hdr, .legendbar, .web-toolbar, .table-viewport, .grid th.corner, .gri
 .web .table-viewport { transition: background-color .42s ease, color .42s ease; }
 .tb-pick, .tb-actions button, .tb-actions .tb-pdf, .hdr-theme {
   transition: background-color .42s ease, color .42s ease, border-color .42s ease, box-shadow .42s ease, transform .32s ease;
+}
+
+/* explicit card hover state (light theme previously had no hover style) */
+.web .appgrid .card:hover {
+  border-color: color-mix(in srgb, var(--swatch-color, #D1D1D6) 42%, #D1D1D6);
+  box-shadow: 0 8px 22px rgba(0,0,0,.08);
+  transform: translateY(-1px);
+}
+
+/* vertical group label hover: highlight every row in the rowspan */
+.web .grid tbody tr.group-row td { box-shadow: inset 0 0 0 9999px rgba(4,71,146,.055); }
+
+.web .grid td.grp { transition: background-color .28s ease, color .28s ease; }
+.web .grid td.grp.group-label-hover { background-color: #E7EFFB; box-shadow: inset 3px 0 0 #044792; color: #044792; }
+
+/* Edge affordance: shadow only, never an opaque page-background band. */
+.web .table-shade-bottom { display: none; }
+.web .table-shade-right {
+  width: 12px;
+  background: linear-gradient(to left, rgba(0,0,0,.055), transparent 12px);
+  box-shadow: inset -7px 0 9px -9px rgba(0,0,0,.24);
 }

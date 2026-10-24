@@ -25,8 +25,8 @@
 [data-theme="dark"] .grid th.prod .pm, [data-theme="dark"] .grid th.prod .pc { color: #EDEDF2 !important; }
 [data-theme="dark"] .grid td.grp { background: #121318; color: #EDEDF2; border-color: #2A2B33; }
 [data-theme="dark"] .grid td.lab { background: #111217; color: #EDEDF2; border-color: #2A2B33; box-shadow: 1px 0 0 #2A2B33; }
-[data-theme="dark"] .grid td.v { color: #EDEDF2; border-color: #2A2B33; background-image: none !important; box-shadow: inset 0 0 0 9999px rgba(8,9,14,.74); }
-[data-theme="dark"] .grid tbody tr:hover td { box-shadow: inset 0 0 0 9999px rgba(77,107,254,.10); }
+[data-theme="dark"] .grid td.v { color: #EDEDF2; border-color: #2A2B33; background-image: none !important; box-shadow: inset 0 0 0 9999px rgba(8,9,14,.60); }
+[data-theme="dark"] .grid tbody tr:hover td { box-shadow: inset 0 0 0 9999px rgba(77,107,254,.16); }
 [data-theme="dark"] .grid td.v .vt { color: inherit; }
 [data-theme="dark"] .bar { background: #2A2C35; }
 [data-theme="dark"] .relbar { background: #2A2C35; }
@@ -90,3 +90,100 @@
 [data-theme="dark"] .ai-top-select option { background: #15161C; color: #F5F5F7; }
 
 [data-theme="dark"] .web .hdr-theme:hover { background: #222633; border-color: #4D6BFE; color: #9DB7FF; }
+
+/* table frame and application cards */
+[data-theme="dark"] .frame { background: #0F1015 !important; }
+[data-theme="dark"] .apps { border-color: #2A2B33; }
+[data-theme="dark"] .appshead .at { color: #F5F5F7; }
+[data-theme="dark"] .appshead .as { color: #A0A0A8; }
+[data-theme="dark"] .appgrid .clabel { color: #8FB4FF !important; text-decoration-color: #3A5A90; }
+[data-theme="dark"] .appgrid .ctext,
+[data-theme="dark"] .appgrid .ctext * { color: #D8D8DE !important; }
+[data-theme="dark"] .appgrid .ctext b { color: #F5F5F7 !important; }
+[data-theme="dark"] .appgrid .card { border-color: #2A2B33; }
+
+/* applications / footer polish */
+[data-theme="dark"] .foot { border-top-color: #2A2B33; }
+[data-theme="dark"] .apps { background: #0E0F14; border-color: #2A2B33; border-radius: 10px; }
+[data-theme="dark"] .appgrid .card {
+  background: #161821;
+  border-color: #2A2E3A;
+  box-shadow: 0 10px 26px rgba(0,0,0,.20);
+}
+[data-theme="dark"] .appgrid .card:hover { border-color: #3B4766; }
+[data-theme="dark"] .appgrid .ctext { font-size: 10px; line-height: 1.70; }
+
+[data-theme="dark"] .appgrid .card {
+  background: #161821;
+  background: color-mix(in oklab, var(--swatch-color, #4D6BFE) 11%, #161821);
+  border-color: color-mix(in srgb, var(--swatch-color, #2A2E3A) 24%, #2A2E3A);
+  box-shadow: 0 10px 26px rgba(0,0,0,.20);
+}
+
+/* row hover: keep the heat darkening layer, then add the same subtle tint as non-heat cells */
+[data-theme="dark"] .grid tbody tr:hover td.v {
+  box-shadow:
+    inset 0 0 0 9999px rgba(8,9,14,.60),
+    inset 0 0 0 9999px rgba(77,107,254,.16);
+}
+[data-theme="dark"] .appgrid .card:hover {
+  border-color: color-mix(in srgb, var(--swatch-color, #4D6BFE) 34%, #3B4766);
+  box-shadow: 0 14px 30px rgba(0,0,0,.30);
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .grid tbody tr.group-row td { box-shadow: inset 0 0 0 9999px rgba(77,107,254,.16); }
+[data-theme="dark"] .grid tbody tr.group-row td.v {
+  box-shadow:
+    inset 0 0 0 9999px rgba(8,9,14,.60),
+    inset 0 0 0 9999px rgba(77,107,254,.16);
+}
+[data-theme="dark"] .grid td.grp.group-label-hover { background-color: #232B3E; box-shadow: inset 3px 0 0 #4D6BFE; color: #F5F5F7; }
+
+[data-theme="dark"] .table-shade-right {
+  background:
+    linear-gradient(to left, #0B0C10 0, rgba(11,12,16,0) 4px),
+    linear-gradient(to left, rgba(0,0,0,.22), transparent 14px);
+  box-shadow: inset -8px 0 10px -10px rgba(0,0,0,.35);
+}
+[data-theme="dark"] .table-shade-bottom {
+  background:
+    linear-gradient(to top, #0B0C10 0, rgba(11,12,16,0) 4px),
+    linear-gradient(to top, rgba(0,0,0,.20), transparent 14px);
+  box-shadow: inset 0 -8px 10px -10px rgba(0,0,0,.32);
+}
+
+[data-theme="dark"] .table-shade-bottom { display: none; }
+[data-theme="dark"] .table-shade-right {
+  background: linear-gradient(to left, rgba(0,0,0,.20), transparent 12px);
+  box-shadow: inset -7px 0 9px -9px rgba(0,0,0,.38);
+}
+
+[data-theme="dark"] .table-hint { background: #1A1C22; border-color: #343640; color: #A0A0A8; }
+
+/* range bars in printability rows */
+[data-theme="dark"] .rngbar { background: #2A2C35; }
+[data-theme="dark"] .rngtxt { color: #EDEDF2; }
+
+/* value sub-components: drying chips, annealing steps, annotations */
+[data-theme="dark"] .dchip { background: #20222A; border: 1px solid #343640; color: #EDEDF2; }
+[data-theme="dark"] .dchip span { color: #A0A0A8; }
+[data-theme="dark"] .nozmat { color: #A0A0A8; }
+[data-theme="dark"] .ano { color: #F5F5F7; }
+[data-theme="dark"] .astep { color: #EDEDF2; }
+[data-theme="dark"] .acap { color: #A0A0A8; }
+
+/* remaining print-only value annotations and difficulty dots */
+[data-theme="dark"] .note,
+[data-theme="dark"] .pillnote,
+[data-theme="dark"] .dlabel { color: #A0A0A8; }
+[data-theme="dark"] .dots i { background: #3A3D48; }
+[data-theme="dark"] .lbar,
+[data-theme="dark"] .lrng { background: #2A2C35; }
+
+html[data-theme="dark"] { background: #0B0C10; }
+
+/* links and step numbers in the dark page shell */
+[data-theme="dark"] .sub a.inline-link { color: #8FB4FF; }
+[data-theme="dark"] .wg-steps b { color: #8FB4FF; }
+[data-theme="dark"] .ai-score { color: #8FB4FF; }
+[data-theme="dark"] .ai-chat-suggest button:hover { border-color: #4D6BFE; color: #9DB7FF; }

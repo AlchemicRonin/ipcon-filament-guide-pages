@@ -607,6 +607,28 @@
     try { localStorage.setItem('ipcon-theme', dark ? 'dark' : 'light'); } catch (e) {}
   });
 
+  // Hovering a vertical group label highlights the whole rowspan group,
+  // not just its first row.
+  (function initGroupHover() {
+    const table = document.querySelector('.grid');
+    if (!table) return;
+    table.querySelectorAll('td.grp').forEach(cell => {
+      const rows = [];
+      let row = cell.closest('tr');
+      const span = Number(cell.rowSpan) || 1;
+      for (let i = 0; i < span && row; i++, row = row.nextElementSibling) rows.push(row);
+      const extraRows = rows.slice(1);
+      cell.addEventListener('mouseenter', () => extraRows.forEach(r => r.classList.add('group-row')));
+      cell.addEventListener('mouseleave', () => extraRows.forEach(r => r.classList.remove('group-row')));
+      // Hovering any row inside the rowspan also marks the vertical group label,
+      // not just the first row that physically owns the rowspan cell.
+      rows.forEach(r => {
+        r.addEventListener('mouseenter', () => cell.classList.add('group-label-hover'));
+        r.addEventListener('mouseleave', () => cell.classList.remove('group-label-hover'));
+      });
+    });
+  })();
+
   const AI_ENDPOINT = document.querySelector('meta[name="ipcon-ai-endpoint"]')?.content?.trim() || '';
   const chatLog = document.getElementById('aiChatLog');
   chatLog?.addEventListener('scroll', updateChatScrollState, { passive: true });

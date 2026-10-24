@@ -413,7 +413,7 @@
         <button class="ai-add" type="button" data-ai-pick="${r.idx}">${UI.ADD || '加入对比'}</button>
       </div>`;
     }).join('');
-    aiNote.textContent = `${UI.TOP_LABEL || 'Top'} ${n} / ${PRODUCTS.length} · ${UI.NOTE || '本地排序'}`;
+    aiNote.textContent = `${UI.TOP_LABEL || 'Top'} ${n} / ${PRODUCTS.length} · ${AI_ENDPOINT ? (UI.NOTE_AI || 'DeepSeek 已接入') : (UI.NOTE || '本地排序')}`;
     animateScores();
   }
 

@@ -10,7 +10,6 @@
 [data-theme="dark"] html, [data-theme="dark"] body.web { background-color: var(--c-0b0c10); }
 [data-theme="dark"] .hdr { background: var(--c-0f1015); }
 [data-theme="dark"] .qrs { display: flex; }
-[data-theme="dark"] .qrs img { filter: invert(1); }
 [data-theme="dark"] .hdr-lang, [data-theme="dark"] .hdr-theme { background: var(--c-1a1c22); border-color: var(--c-343640); color: var(--c-e8e8ec); }
 [data-theme="dark"] .sub, [data-theme="dark"] .cl, [data-theme="dark"] .cl.en, [data-theme="dark"] .cl.url { color: var(--c-a0a0a8); }
 [data-theme="dark"] .cl.url a { color: var(--c-8fb4ff); }

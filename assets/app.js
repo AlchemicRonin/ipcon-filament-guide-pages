@@ -527,7 +527,18 @@
     prewarmAI();
     if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
     aiModal.hidden = false;
-    requestAnimationFrame(() => aiModal.classList.add('open'));
+    requestAnimationFrame(() => {
+      aiModal.classList.add('open');
+      if (!REDUCED && aiPanel) {
+        const r = aiPanel.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0) {
+          aiPanel.animate([
+            { width: Math.min(360, r.width) + 'px', height: Math.min(250, r.height) + 'px', opacity: 0, transform: 'translateY(12px) scale(.98)' },
+            { width: r.width + 'px', height: r.height + 'px', opacity: 1, transform: 'none' }
+          ], { duration: 520, easing: 'cubic-bezier(.2,.9,.2,1)' });
+        }
+      }
+    });
     lockPage();
     syncBrandPhase();
     requestAnimationFrame(updatePanelScrollbar);
@@ -746,6 +757,38 @@
     });
   }
 
+  function makeTypewriter(el) {
+    el.textContent = '';
+    const node = document.createTextNode('');
+    el.appendChild(node);
+    let target = '', shown = 0, finished = false, timer = null, resolveDone, lastPanel = 0;
+    const done = new Promise(r => { resolveDone = r; });
+    let lastScroll = 0;
+    function step() {
+      timer = null;
+      if (shown < target.length) {
+        const rectBefore = aiPanel ? aiPanel.getBoundingClientRect() : null;
+        const remain = target.length - shown;
+        const add = Math.max(1, Math.min(8, Math.ceil(remain / 90)));
+        shown = Math.min(target.length, shown + add);
+        node.nodeValue = target.slice(0, shown);
+        const now = performance.now();
+        if (rectBefore && now - lastPanel > 300) { lastPanel = now; animatePanelFrom(rectBefore); }
+        if (now - lastScroll > 55) { lastScroll = now; scrollPanelToBottom(); }
+        timer = setTimeout(step, 16);
+      } else if (finished) {
+        resolveDone();
+      } else {
+        timer = setTimeout(step, 35);
+      }
+    }
+    return {
+      push(t) { if (!t) return; target += t; if (!timer) step(); },
+      finish() { finished = true; if (!timer) step(); },
+      done,
+    };
+  }
+
   async function streamAnswer(res, pending, local) {
     const reader = res.body?.getReader();
     if (!reader) throw new Error('no stream body');
@@ -754,18 +797,7 @@
     const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
     pending.classList.remove('thinking');
     pending.classList.add('deepseek');
-    pending.textContent = '';
-    const textNode = document.createTextNode('');
-    pending.appendChild(textNode);
-    let raf = 0;
-    const paint = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
-        textNode.nodeValue = answer;
-        scrollPanelToBottom();
-      });
-    };
+    const typer = makeTypewriter(pending);
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -780,12 +812,13 @@
         try {
           const chunk = JSON.parse(payload);
           const delta = chunk?.choices?.[0]?.delta?.content;
-          if (delta) { answer += delta; paint(); }
+          if (delta) { answer += delta; typer.push(delta); }
         } catch {}
       }
     }
     if (!answer.trim()) throw new Error('empty stream');
-    textNode.nodeValue = answer;
+    typer.finish();
+    await typer.done;
     const src = document.createElement('span');
     src.className = 'src'; src.textContent = isCN ? 'DeepSeek · 基于当前表格' : 'DeepSeek · current table';
     pending.appendChild(src);
@@ -833,32 +866,25 @@
       const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
       pending.classList.remove('thinking');
       pending.classList.add('deepseek');
-      pending.style.transition = 'opacity .2s ease, transform .2s ease';
-      pending.style.opacity = '0';
-      pending.style.transform = 'translateY(2px)';
-      requestAnimationFrame(() => {
-        pending.textContent = data.answer || data.error || local;
-        const src = document.createElement('span');
-        src.className = 'src'; src.textContent = isCN ? 'DeepSeek · 基于当前表格' : 'DeepSeek · current table';
-        pending.appendChild(src);
-        pending.style.opacity = '1';
-        pending.style.transform = 'translateY(0)';
-        pending.classList.add('answer-in');
-        animatePanelFrom(before);
-        scrollPanelToBottom();
-      });
+      const typer = makeTypewriter(pending);
+      typer.push(data.answer || data.error || local);
+      typer.finish();
+      await typer.done;
+      const src = document.createElement('span');
+      src.className = 'src'; src.textContent = isCN ? 'DeepSeek · 基于当前表格' : 'DeepSeek · current table';
+      pending.appendChild(src);
+      animatePanelFrom(before);
+      scrollPanelToBottom();
     } catch (e) {
       pending.classList.remove('thinking', 'deepseek');
-      pending.style.transition = 'opacity .2s ease, transform .2s ease';
-      pending.style.opacity = '0';
-      pending.style.transform = 'translateY(2px)';
-      requestAnimationFrame(() => {
-        pending.textContent = local;
-        const src = document.createElement('span'); src.className = 'src'; src.textContent = isCN ? '本地数据 · AI 不可用' : 'Local data · AI unavailable'; pending.appendChild(src);
-        pending.style.opacity = '1';
-        pending.style.transform = 'translateY(0)';
-        scrollPanelToBottom();
-      });
+      const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
+      const typer = makeTypewriter(pending);
+      typer.push(local);
+      typer.finish();
+      await typer.done;
+      const src = document.createElement('span'); src.className = 'src'; src.textContent = isCN ? '本地数据 · AI 不可用' : 'Local data · AI unavailable'; pending.appendChild(src);
+      animatePanelFrom(before);
+      scrollPanelToBottom();
     }
   }
 

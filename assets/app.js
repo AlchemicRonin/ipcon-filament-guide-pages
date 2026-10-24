@@ -331,16 +331,16 @@
   const UI = JSON.parse(document.getElementById('uiData')?.textContent || '{}');
   const PRODUCTS = JSON.parse(document.getElementById('productData')?.textContent || '[]');
   const AI_PRIOS = [
-    { key: 'hdt', label: '耐温', short: 'HDT', unit: '°C', dir: 1, theme: '#E8590C', ink: '#fff' },
     { key: 'strength', label: '强度', short: '强度', unit: 'MPa', dir: 1, theme: '#2AAEC6', ink: '#062C33' },
     { key: 'stiffness', label: '刚度', short: '模量', unit: 'MPa', dir: 1, theme: '#7C20A3', ink: '#fff' },
     { key: 'toughness', label: '韧性', short: '韧性', unit: 'kJ/m²', dir: 1, theme: '#2E9E5B', ink: '#fff' },
+    { key: 'hdt', label: '耐温', short: 'HDT', unit: '°C', dir: 1, theme: '#E8590C', ink: '#fff' },
     { key: 'water', label: '低吸水', short: '吸水', unit: '%', dir: -1, theme: '#0A7EA4', ink: '#fff' },
     { key: 'shrink', label: '低收缩', short: '收缩', unit: '%', dir: -1, theme: '#0A7EA4', ink: '#fff' },
     { key: 'density', label: '轻量', short: '密度', unit: 'g/cm³', dir: -1, theme: '#044792', ink: '#fff' },
     { key: 'mfi', label: '高流动', short: '熔指', unit: 'g/10min', dir: 1, theme: '#DA291C', ink: '#fff' },
   ];
-  const aiState = new Set(['hdt', 'strength']);
+  const aiState = new Set();
   const aiModal = document.getElementById('aiModal');
   const aiPrios = document.getElementById('aiPriorities');
   const aiResults = document.getElementById('aiResults');

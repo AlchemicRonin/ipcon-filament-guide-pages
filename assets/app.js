@@ -1020,7 +1020,7 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       if ((res.headers.get('content-type') || '').includes('text/event-stream') && res.body) {
         pending.classList.remove('thinking');
-        const sources = readSources(res);
+        let sources = readSources(res);
         const typer = makeTypedAnswer(pending);
         const reader = res.body.getReader(); const dec = new TextDecoder();
         let buf = '', answer = '';
@@ -1033,7 +1033,9 @@
             const raw = line.trim(); if (!raw.startsWith('data:')) continue;
             const payload = raw.slice(5).trim(); if (!payload || payload === '[DONE]') continue;
             try {
-              const j = JSON.parse(payload); const delta = j?.choices?.[0]?.delta?.content;
+              const j = JSON.parse(payload);
+              if (j?.ipcon_sources) { sources = j.ipcon_sources; continue; }
+              const delta = j?.choices?.[0]?.delta?.content;
               if (delta) {
                 answer += delta;
                 typer.push(delta);
@@ -1267,7 +1269,7 @@
     const decoder = new TextDecoder();
     let buffer = '', answer = '';
     const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
-    const sources = readSources(res);
+    let sources = readSources(res);
     pending.classList.remove('thinking');
     pending.classList.add('deepseek');
     const typer = makeTypedAnswer(pending);
@@ -1292,6 +1294,7 @@
         if (!payload || payload === '[DONE]') continue;
         try {
           const chunk = JSON.parse(payload);
+          if (chunk?.ipcon_sources) { sources = chunk.ipcon_sources; continue; }
           const delta = chunk?.choices?.[0]?.delta?.content;
           if (delta) { answer += delta; typer.push(delta); }
         } catch {}

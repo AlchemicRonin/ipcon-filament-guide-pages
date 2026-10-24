@@ -783,6 +783,53 @@
     });
   }
 
+  async function streamAnswer(res, pending, local) {
+    const reader = res.body?.getReader();
+    if (!reader) throw new Error('no stream body');
+    const decoder = new TextDecoder();
+    let buffer = '', answer = '';
+    const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
+    pending.classList.remove('thinking');
+    pending.classList.add('deepseek');
+    pending.textContent = '';
+    const textNode = document.createTextNode('');
+    pending.appendChild(textNode);
+    let raf = 0;
+    const paint = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        textNode.nodeValue = answer;
+        scrollPanelToBottom();
+      });
+    };
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        const raw = line.trim();
+        if (!raw.startsWith('data:')) continue;
+        const payload = raw.slice(5).trim();
+        if (!payload || payload === '[DONE]') continue;
+        try {
+          const chunk = JSON.parse(payload);
+          const delta = chunk?.choices?.[0]?.delta?.content;
+          if (delta) { answer += delta; paint(); }
+        } catch {}
+      }
+    }
+    if (!answer.trim()) throw new Error('empty stream');
+    textNode.nodeValue = answer;
+    const src = document.createElement('span');
+    src.className = 'src'; src.textContent = isCN ? 'DeepSeek · 基于当前表格' : 'DeepSeek · current table';
+    pending.appendChild(src);
+    animatePanelFrom(before);
+    scrollPanelToBottom();
+  }
+
   async function submitQuestion(q) {
     const question = (q || '').trim();
     if (!question) return;
@@ -810,11 +857,15 @@
         res = await fetch(AI_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question, context: buildAIContext() }),
+          body: JSON.stringify({ question, context: buildAIContext(), stream: true }),
           signal: ctrl.signal,
         });
       } finally { clearTimeout(timer); }
       if (!res.ok) throw new Error('HTTP ' + res.status);
+      if ((res.headers.get('content-type') || '').includes('text/event-stream')) {
+        await streamAnswer(res, pending, local);
+        return;
+      }
       const data = await res.json();
       const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
       pending.classList.remove('thinking');

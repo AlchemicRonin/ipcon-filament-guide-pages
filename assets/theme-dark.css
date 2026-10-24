@@ -190,3 +190,11 @@ html[data-theme="dark"] { background: var(--c-0b0c10); }
 [data-theme="dark"] .ai-panel select:focus-visible, [data-theme="dark"] .ai-panel a:focus-visible {
   outline-color: var(--c-8fb4ff);
 }
+[data-theme="dark"] .ai-top-select:disabled {
+  background-image: none !important;
+  background-color: #1B1D26 !important;
+  color: #777B85 !important;
+  border: 1px solid #2E3140;
+  opacity: 1;
+  box-shadow: none;
+}

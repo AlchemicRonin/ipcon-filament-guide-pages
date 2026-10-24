@@ -119,18 +119,14 @@
   function animateScores() {
     if (REDUCED) return;
     document.querySelectorAll('.ai-score').forEach(el => {
+      // Keep the real score visible at all times; animate the arrival only.
       const to = Number((el.textContent || '').replace(/[^\d.]/g, ''));
       if (!Number.isFinite(to)) return;
-      el.textContent = '0';
-      const started = performance.now();
-      function frame(now) {
-        const t = Math.min(1, (now - started) / 650);
-        const eased = 1 - Math.pow(1 - t, 3);
-        el.textContent = Math.round(to * eased);
-        if (t < 1) requestAnimationFrame(frame);
-        else el.textContent = String(to);
-      }
-      requestAnimationFrame(frame);
+      el.textContent = String(to);
+      el.animate(
+        [{ opacity: .35, transform: 'translateY(2px)' }, { opacity: 1, transform: 'none' }],
+        { duration: 260, easing: 'ease-out' }
+      );
     });
   }
   const ths = [...table.querySelectorAll('th.prod')];
@@ -330,16 +326,8 @@
   // ---- local selection assistant ----
   const UI = JSON.parse(document.getElementById('uiData')?.textContent || '{}');
   const PRODUCTS = JSON.parse(document.getElementById('productData')?.textContent || '[]');
-  const AI_PRIOS = [
-    { key: 'strength', label: '强度', short: '强度', unit: 'MPa', dir: 1, theme: '#2AAEC6', ink: '#062C33' },
-    { key: 'stiffness', label: '刚度', short: '模量', unit: 'MPa', dir: 1, theme: '#7C20A3', ink: '#fff' },
-    { key: 'toughness', label: '韧性', short: '韧性', unit: 'kJ/m²', dir: 1, theme: '#2E9E5B', ink: '#fff' },
-    { key: 'hdt', label: '耐温', short: 'HDT', unit: '°C', dir: 1, theme: '#E8590C', ink: '#fff' },
-    { key: 'water', label: '低吸水', short: '吸水', unit: '%', dir: -1, theme: '#0A7EA4', ink: '#fff' },
-    { key: 'shrink', label: '低收缩', short: '收缩', unit: '%', dir: -1, theme: '#0A7EA4', ink: '#fff' },
-    { key: 'density', label: '轻量', short: '密度', unit: 'g/cm³', dir: -1, theme: '#044792', ink: '#fff' },
-    { key: 'mfi', label: '高流动', short: '熔指', unit: 'g/10min', dir: 1, theme: '#DA291C', ink: '#fff' },
-  ];
+  const AI_PRIOS = JSON.parse(document.getElementById('propertyData')?.textContent || '[]');
+
   const aiState = new Set();
   const aiModal = document.getElementById('aiModal');
   const aiPrios = document.getElementById('aiPriorities');
@@ -375,10 +363,11 @@
     return PRODUCTS.map((p, idx) => {
       let total = 0, weight = 0;
       use.forEach(prio => {
-        const vals = PRODUCTS.map(x => x[prio.key]).filter(v => typeof v === 'number');
-        if (!vals.length || typeof p[prio.key] !== 'number') return;
+        const vals = prio.values.filter(v => typeof v === 'number');
+        const value = prio.values[idx];
+        if (!vals.length || typeof value !== 'number') return;
         const lo = Math.min(...vals), hi = Math.max(...vals);
-        let n = hi > lo ? (p[prio.key] - lo) / (hi - lo) : 0.5;
+        let n = hi > lo ? (value - lo) / (hi - lo) : 0.5;
         if (prio.dir < 0) n = 1 - n;
         total += n; weight += 1;
       });
@@ -400,7 +389,7 @@
     aiTop = scoreProducts().slice(0, n);
     aiResults.innerHTML = aiTop.map((r, i) => {
       const stats = AI_PRIOS.filter(p => aiState.has(p.key)).slice(0, 3)
-        .map(p => `${UI.SHORT?.[p.key] || p.short} ${fmt(r.p[p.key], p.unit)}`).join(' · ') || '综合评分';
+        .map(p => `${p.short || p.label} ${fmt(p.values[r.idx], p.unit)}`).join(' · ') || '综合评分';
       return `<div class="ai-result ${i === 0 ? 'top' : ''}" data-idx="${r.idx}">
         <div class="ai-rank">${i + 1}</div>
         <div class="ai-r-main"><div class="ai-r-name" style="color:${ths[r.idx]?.querySelector('.pm')?.style.getPropertyValue('--product-color') || 'inherit'}">${r.p.model}<small style="color:${ths[r.idx]?.querySelector('.pc')?.style.getPropertyValue('--product-color') || 'inherit'}">${all[r.idx]?.color || r.p.color}</small></div>
@@ -550,7 +539,7 @@
     aiModal.classList.remove('open');
     clearTimeout(railHideTimer);
     scrollRail?.classList.remove('visible');
-    const delay = REDUCED ? 0 : 320;
+    const delay = REDUCED ? 0 : 380;
     closeTimer = setTimeout(() => {
       aiModal.hidden = true;
       closeTimer = null;
@@ -854,6 +843,7 @@
         pending.appendChild(src);
         pending.style.opacity = '1';
         pending.style.transform = 'translateY(0)';
+        pending.classList.add('answer-in');
         animatePanelFrom(before);
         scrollPanelToBottom();
       });

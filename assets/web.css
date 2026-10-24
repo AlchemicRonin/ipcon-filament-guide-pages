@@ -157,12 +157,12 @@ html.modal-locked, body.modal-locked { overflow: hidden !important; }
   body.modal-locked { position: fixed; width: 100%; }
 .ai-modal[hidden] { display: none; }
 .ai-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-.ai-backdrop { position: absolute; inset: 0; background: rgba(9,10,16,.42); opacity: 0; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: opacity .3s ease; }
+.ai-backdrop { position: absolute; inset: 0; background: rgba(9,10,16,.42); opacity: 0; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: opacity .42s ease; }
 .ai-modal.open .ai-backdrop { opacity: 1; }
 .ai-panel { overscroll-behavior: contain; position: relative; width: min(720px, 100%); max-height: min(84vh, 780px); overflow: hidden; padding: 14px; border-radius: 24px;
   background: linear-gradient(180deg,#fff 0%,var(--c-f8faff) 62%,var(--c-f3f7fe) 100%);
   box-shadow: 0 30px 90px rgba(4,20,50,.28), 0 1px 0 rgba(255,255,255,.8) inset;
-  opacity: 0; transform: translateY(14px) scale(.985); transition: opacity .28s ease, transform .28s cubic-bezier(.2,.8,.2,1); }
+  opacity: 0; transform: translateY(14px) scale(.985); transition: opacity .42s ease, transform .42s cubic-bezier(.2,.8,.2,1); }
 .ai-modal.open .ai-panel { opacity: 1; transform: none; }
 .ai-panel-scroll { max-height: calc(min(84vh, 780px) - 28px); overflow: auto; overscroll-behavior: contain; padding: 22px 30px 26px 16px; border-radius: 14px; scrollbar-width: none; scroll-padding: 22px 0 26px; }
 .ai-panel-scroll::-webkit-scrollbar { width: 0; height: 0; }
@@ -378,3 +378,19 @@ body.web, .hdr, .legendbar, .web-toolbar, .table-viewport, .grid th.corner, .gri
 [data-theme="dark"] .web .qr-item .qr-dark { opacity: 1; }
 
 .web .qr-item img { image-rendering: pixelated; image-rendering: crisp-edges; }
+
+/* disabled "compare top" select: no washed-out gradient */
+.web .ai-top-select:disabled {
+  background-image: none !important;
+  background-color: #EEF1F6 !important;
+  color: #8E8E93 !important;
+  border: 1px solid #DFE4EC;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.ai-msg.answer-in { animation: answerIn .42s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes answerIn {
+  from { opacity: 0; transform: translateY(3px); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}

@@ -1,4 +1,15 @@
 (() => {
+  function smallTalkReply(q, cn) {
+    const t = String(q || '').trim().toLowerCase();
+    if (/^(谢谢|感谢|多谢|辛苦了|好的|好|ok|okay|收到|明白了|知道了|thx|thanks|thank you)[!！。.\s]*$/i.test(t)) {
+      return cn ? '不客气，随时继续问这款材料或打印问题。' : 'You are welcome. Ask anytime about this material or printing.';
+    }
+    if (/^(你好|您好|hi|hello|嗨)[!！。.\s]*$/i.test(t)) {
+      return cn ? '你好，可以问这款材料的 TDS、应用场景或打印问题。' : 'Hi — ask about this material’s TDS, applications, or printing.';
+    }
+    return null;
+  }
+
   function readSources(res) {
     try {
       const raw = res.headers.get('x-ipcon-sources');
@@ -998,13 +1009,15 @@
   }
   function wikiWelcome() {
     if (!wikiChatLog || wikiChatLog.children.length) return;
-    wikiChatMsg('bot', wikiCN ? '可以直接问这款材料的 TDS、应用场景和打印问题。' : 'Ask anything about this material: TDS, applications, or printing.', wikiCN ? 'IPCON 数据' : 'IPCON data');
+    wikiChatMsg('bot', wikiCN ? '你好，我是 IPCON 耗材小助手。可以问我这款材料的 TDS 参数、应用场景或打印问题，我会尽量帮你说明白。' : 'Hi, I\'m the IPCON filament assistant. Ask me about this material\'s TDS, applications, or printing questions.', wikiCN ? 'IPCON 数据' : 'IPCON data');
   }
   async function askWikiQuestion(q) {
     if (wikiIndex < 0) return;
     const d = WIKI[PRODUCTS[wikiIndex].model];
     if (!d) return;
     wikiChatMsg('user', q);
+    const social = smallTalkReply(q, wikiCN);
+    if (social) { wikiChatMsg('bot', social); return; }
     const pending = wikiChatMsg('bot', wikiCN ? '正在思考…' : 'Thinking…');
     pending.classList.add('deepseek', 'thinking');
     wikiAskProduct = d.model;
@@ -1252,7 +1265,7 @@
 
   function ensureChat() {
     if (!chatLog || chatLog.children.length) return;
-    addChat('bot', isCN ? '可以直接问表内数据，比如：耐温最高的三款？最韧的是哪几款？' : 'Ask about the table data, e.g. Top 3 for heat? Which are toughest?', isCN ? 'IPCON 数据' : 'IPCON data');
+    addChat('bot', isCN ? '你好，我是 IPCON 选材小助手。可以问我耗材性能、AMS/CFS、烘干或选型问题；也可以先选偏好，我帮你对比。' : 'Hi, I\'m the IPCON selection assistant. Ask about properties, AMS/CFS, drying, or choosing a material — or pick priorities and I\'ll compare them.', isCN ? 'IPCON 数据' : 'IPCON data');
     chatSuggest.innerHTML = '';
     (UI.CHAT_SUGGEST || []).forEach(text => {
       const b = document.createElement('button');
@@ -1316,6 +1329,14 @@
     ensureChat();
     const first = aiPanel ? aiPanel.getBoundingClientRect() : null;
     addChat('user', question, '', false);
+    const social = smallTalkReply(question, isCN);
+    if (social) {
+      addChat('bot', social, '', false);
+      animatePanelFrom(first);
+      updatePanelScrollbar();
+      scrollPanelToBottom();
+      return;
+    }
     const local = localAnswer(question);
     if (!AI_ENDPOINT) {
       addChat('bot', local, isCN ? '本地数据' : 'Local data', false);

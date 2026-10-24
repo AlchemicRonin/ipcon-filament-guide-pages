@@ -48,7 +48,7 @@
 [data-theme="dark"] .ai-chat-form input::placeholder { color: #777B85; }
 [data-theme="dark"] .ai-chat-suggest button { background: #1B1D26; border-color: #343640; color: #D8D8DE; }
 [data-theme="dark"] .ai-msg.bot { background: #171A24; border-color: #2E3140; color: #E8E8EC; }
-[data-theme="dark"] .ai-msg.bot.deepseek { background: #14213D; border-color: #2C4A85; color: #EAF0FF; }
+[data-theme="dark"] .ai-msg.bot.deepseek { background: #14213D; border-color: #4D6BFE; color: #EAF0FF; }
 [data-theme="dark"] .ai-msg.bot.deepseek .src { color: #8FB4FF; }
 [data-theme="dark"] .ai-x { background: #252833; color: #E8E8EC; }
 [data-theme="dark"] .ai-top-select { color: #0B0C10; }

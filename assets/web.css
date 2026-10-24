@@ -214,7 +214,7 @@ html.modal-locked, body.modal-locked { overflow: hidden !important; }
 @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 .ai-msg.user { align-self: flex-end; background: #044792; color: #fff; border-bottom-right-radius: 4px; }
 .ai-msg.bot { align-self: flex-start; background: #F2F6FC; color: #2C2C2E; border: 1px solid #E1E8F3; border-bottom-left-radius: 4px; }
-.ai-msg.bot.deepseek { background: #E4EDFF; border: 1px solid #C9D8FF; border-left: 3px solid #4D6BFE; color: #121C31; box-shadow: inset 0 0 0 1px rgba(77,107,254,.06); }
+.ai-msg.bot.deepseek { background: #E4EDFF; border: 2px solid #4D6BFE; border-left-width: 3px; color: #121C31; box-shadow: inset 0 0 0 1px rgba(77,107,254,.10); }
 .ai-msg.bot.deepseek .src { color: #4D6BFE; font-weight: 600; }
 .ai-msg .dots { display: inline-flex; gap: 3px; margin-left: 4px; vertical-align: 1px; }
 .ai-msg .dots i { width: 4px; height: 4px; border-radius: 50%; background: #4D6BFE; display: block; animation: dsDot 1s ease-in-out infinite; }

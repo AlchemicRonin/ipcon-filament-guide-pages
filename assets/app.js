@@ -589,26 +589,6 @@
   });
 
   const AI_ENDPOINT = document.querySelector('meta[name="ipcon-ai-endpoint"]')?.content?.trim() || '';
-  const aiExplain = document.getElementById('aiExplain');
-  let aiAnswer = null;
-  if (AI_ENDPOINT) aiExplain.hidden = false;
-  aiExplain?.addEventListener('click', async () => {
-    if (!aiTop.length) return;
-    aiExplain.disabled = true; aiExplain.textContent = '…';
-    try {
-      const context = aiTop.map((r, i) => `${i + 1}. ${r.p.model} (${r.p.color}) score ${r.score}: HDT ${r.p.hdt}, strength ${r.p.strength}, stiffness ${r.p.stiffness}, toughness ${r.p.toughness}, water ${r.p.water}, density ${r.p.density}`).join('\n');
-      const res = await fetch(AI_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: UI.AI_TITLE, context }) });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
-      if (!aiAnswer) { aiAnswer = document.createElement('div'); aiAnswer.className = 'ai-answer'; aiResults.after(aiAnswer); }
-      aiAnswer.textContent = data.answer || data.error || 'No answer';
-      aiAnswer.classList.add('show');
-    } catch (e) {
-      if (!aiAnswer) { aiAnswer = document.createElement('div'); aiAnswer.className = 'ai-answer'; aiResults.after(aiAnswer); }
-      aiAnswer.textContent = 'AI endpoint error: ' + e.message;
-      aiAnswer.classList.add('show');
-    } finally { aiExplain.disabled = false; aiExplain.textContent = UI.AI_EXPLAIN || 'AI'; }
-  });
   const chatLog = document.getElementById('aiChatLog');
   chatLog?.addEventListener('scroll', updateChatScrollState, { passive: true });
   const chatForm = document.getElementById('aiChatForm');

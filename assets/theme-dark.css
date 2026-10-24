@@ -64,7 +64,7 @@
 [data-theme="dark"] .legendbar,
 [data-theme="dark"] .legendbar .lg,
 [data-theme="dark"] .legendbar span { color: #A0A0A8 !important; }
-[data-theme="dark"] .web-guide h2 { background-image: linear-gradient(100deg,#F5F5F7 0%,#8FB4FF 48%,#C4B5FD 100%) !important; }
+[data-theme="dark"] .web-guide h2 { background-image: linear-gradient(100deg,#F5F5F7 0%,#C9D8FF 38%,#8FB4FF 68%,#D8C8FF 100%) !important; background-size: 100% 100% !important; background-position: 0% 50% !important; animation: none !important; }
 [data-theme="dark"] .wg-steps span { background: #15161C; border-color: #2A2B33; color: #D8D8DE; }
 [data-theme="dark"] .grid th.corner { color: #EDEDF2 !important; }
 [data-theme="dark"] .grid td.lab .lm,
@@ -88,3 +88,5 @@
 [data-theme="dark"] .badge { background: #173A2B; color: #7EE2A8; }
 [data-theme="dark"] .ai-top-select { background-image: linear-gradient(100deg,#4D6BFE,#3451C9) !important; color: #fff; animation: none; }
 [data-theme="dark"] .ai-top-select option { background: #15161C; color: #F5F5F7; }
+
+[data-theme="dark"] .web .hdr-theme:hover { background: #222633; border-color: #4D6BFE; color: #9DB7FF; }

@@ -564,6 +564,26 @@
     closeAI();
   }
 
+  document.getElementById('assistantBtn')?.addEventListener('click', openAI);
+  document.querySelector('.ai-x')?.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation(); closeAI();
+  });
+  aiModal?.addEventListener('click', e => {
+    if (e.target.closest('[data-ai-close]')) closeAI();
+    const pick = e.target.closest('[data-ai-pick]');
+    if (pick) {
+      selected.add(+pick.dataset.aiPick);
+      build(); apply();
+      closeAI();
+    }
+    const prio = e.target.closest('[data-ai-prio]');
+    if (prio) {
+      const k = prio.dataset.aiPrio;
+      if (aiState.has(k)) aiState.delete(k); else aiState.add(k);
+      buildAIPrios(); renderAI(); syncBrandPhase();
+    }
+  });
+
   const themeBtn = document.getElementById('themeToggle');
   function applyTheme(dark) {
     const root = document.documentElement;

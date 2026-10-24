@@ -611,7 +611,16 @@
     const el = document.createElement('div');
     el.className = 'ai-msg ' + role;
     el.textContent = text;
-    if (source) {
+    if (source === 'DeepSeek') {
+      el.classList.add('deepseek');
+      const src = document.createElement('a');
+      src.className = 'src';
+      src.href = 'https://www.deepseek.com';
+      src.target = '_blank';
+      src.rel = 'noopener';
+      src.textContent = 'DeepSeek ↗';
+      el.appendChild(src);
+    } else if (source) {
       const src = document.createElement('span');
       src.className = 'src';
       src.textContent = source;
@@ -729,7 +738,12 @@
       scrollPanelToBottom();
       return;
     }
-    const pending = addChat('bot', isCN ? '正在连接 DeepSeek…' : 'Connecting to DeepSeek…', '', false);
+    const pending = addChat('bot', isCN ? '正在思考' : 'Thinking', 'DeepSeek', false);
+    pending.classList.add('thinking');
+    const dots = document.createElement('span');
+    dots.className = 'dots';
+    dots.innerHTML = '<i></i><i></i><i></i>';
+    pending.appendChild(dots);
     animatePanelFrom(first);
     updatePanelScrollbar();
     scrollPanelToBottom();
@@ -748,12 +762,19 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
+      pending.classList.remove('thinking');
+      pending.querySelector('.dots')?.remove();
       pending.textContent = data.answer || data.error || local;
+      pending.classList.add('deepseek');
       if (!REDUCED) pending.animate([{ opacity: .55 }, { opacity: 1 }], { duration: 180, easing: 'ease-out' });
-      const src = document.createElement('span'); src.className = 'src'; src.textContent = 'DeepSeek'; pending.appendChild(src);
+      const src = document.createElement('a');
+      src.className = 'src'; src.href = 'https://www.deepseek.com'; src.target = '_blank'; src.rel = 'noopener'; src.textContent = 'DeepSeek ↗';
+      pending.appendChild(src);
       animatePanelFrom(before);
       scrollPanelToBottom();
     } catch (e) {
+      pending.classList.remove('thinking', 'deepseek');
+      pending.querySelector('.dots')?.remove();
       pending.textContent = local;
       const src = document.createElement('span'); src.className = 'src'; src.textContent = isCN ? '本地数据 · AI 不可用' : 'Local data · AI unavailable'; pending.appendChild(src);
     }

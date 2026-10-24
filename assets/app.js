@@ -733,6 +733,7 @@
   }
   function openWiki(idx) {
     if (wikiCloseTimer) { clearTimeout(wikiCloseTimer); wikiCloseTimer = null; }
+    if (wikiIndex !== idx && wikiChatLog) wikiChatLog.innerHTML = '';
     wikiIndex = idx;
     renderWiki(idx);
     wikiReturnFocus = document.activeElement;
@@ -761,22 +762,77 @@
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openWiki(Number(card.dataset.wiki)); }
     });
   });
+  const wikiChatLog = document.getElementById('wikiChatLog');
+  const wikiChatForm = document.getElementById('wikiChatForm');
+  const wikiChatInput = document.getElementById('wikiChatInput');
+  function wikiContext(d) {
+    const all = [...(d.info || []), ...(d.physical || []), ...(d.mechanical || []), ...(d.settings || [])];
+    const facts = all.map(x => `${x.label}: ${x.value}${x.method ? ` (${x.method})` : ''}`).join('\n');
+    const table = (d.table?.[wikiCN ? 'CN' : 'EN'] || []).map(g => g.rows.map(r => `${r.label}${r.detail ? ' ' + r.detail : ''}: ${r.value}`).join('\n')).join('\n');
+    return `PRODUCT: ${d.model} / ${d.color}\nTDS:\n${facts}\nTABLE:\n${table}\nFEATURES:\n${(d.features_lang?.[wikiCN ? 'CN' : 'EN'] || []).join('\n')}`;
+  }
+  function wikiChatMsg(role, text) {
+    const el = document.createElement('div');
+    el.className = 'wiki-chat-msg ' + role;
+    el.textContent = text;
+    wikiChatLog.appendChild(el);
+    wikiChatLog.scrollTop = wikiChatLog.scrollHeight;
+    return el;
+  }
+  async function askWikiQuestion(q) {
+    if (wikiIndex < 0) return;
+    const d = WIKI[PRODUCTS[wikiIndex].model];
+    if (!d) return;
+    wikiChatMsg('user', q);
+    const pending = wikiChatMsg('bot', wikiCN ? '正在思考…' : 'Thinking…');
+    wikiAskProduct = d.model;
+    try {
+      if (!AI_ENDPOINT) throw new Error('no endpoint');
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 25000);
+      const res = await fetch(AI_ENDPOINT, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q, context: wikiContext(d), stream: true }), signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      if ((res.headers.get('content-type') || '').includes('text/event-stream') && res.body) {
+        const reader = res.body.getReader(); const dec = new TextDecoder();
+        let buf = '', answer = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buf += dec.decode(value, { stream: true });
+          const lines = buf.split('\n'); buf = lines.pop() || '';
+          for (const line of lines) {
+            const raw = line.trim(); if (!raw.startsWith('data:')) continue;
+            const payload = raw.slice(5).trim(); if (!payload || payload === '[DONE]') continue;
+            try { const j = JSON.parse(payload); const delta = j?.choices?.[0]?.delta?.content; if (delta) { answer += delta; pending.textContent = answer; wikiChatLog.scrollTop = wikiChatLog.scrollHeight; } } catch {}
+          }
+        }
+        if (!answer.trim()) throw new Error('empty');
+      } else {
+        const data = await res.json();
+        pending.textContent = data.answer || data.error || (wikiCN ? '暂无回答' : 'No answer');
+      }
+    } catch (e) {
+      pending.textContent = wikiCN ? '暂时无法连接 AI，请先参考上方 TDS 参数。' : 'AI is temporarily unavailable. Please use the TDS above.';
+    }
+  }
   wikiModal?.addEventListener('click', e => {
     if (e.target.closest('[data-wiki-close]')) closeWiki();
     const ai = e.target.closest('[data-wiki-ai]');
     if (ai) {
-      const model = ai.dataset.wikiAi;
-      wikiAskProduct = model;
-      closeWiki();
-      setTimeout(() => {
-        openAI();
-        setTimeout(() => {
-          if (!chatInput || !chatForm) return;
-          chatInput.value = wikiCN ? `请介绍 ${model} 的 TDS 关键参数、应用场景和打印注意事项` : `Summarize the TDS, applications and printing tips for ${model}`;
-          chatForm.requestSubmit();
-        }, 400);
-      }, 260);
+      wikiChatInput?.focus();
+      wikiChatInput?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     }
+  });
+  wikiChatForm?.addEventListener('submit', e => {
+    e.preventDefault();
+    const q = (wikiChatInput?.value || '').trim();
+    if (!q) return;
+    wikiChatInput.value = '';
+    askWikiQuestion(q);
   });
   document.addEventListener('keydown', e => {
     if (wikiModal?.hidden) return;

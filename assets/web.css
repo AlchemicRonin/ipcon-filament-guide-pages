@@ -703,3 +703,7 @@ body.web, .hdr, .legendbar, .web-toolbar, .table-viewport, .grid th.corner, .gri
 .ai-msg .md-quote { display: inline-block; padding-left: 8px; border-left: 2px solid var(--line-strong); color: var(--muted); }
 
 .ai-chat-status { display: flex; justify-content: flex-end; margin: 6px 0 2px; }
+
+.ai-chat-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ai-chat-tools .ai-chat-suggest { flex: 1 1 auto; }
+.ai-chat-tools .ai-ds-status { margin-left: auto; }

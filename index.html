@@ -398,7 +398,7 @@ body.light th.prod { border-right: none; }
 }
 .ctext b { font-weight: 600; color: var(--ink); }
 
-</style><meta name="ipcon-ai-endpoint" content="https://ipcon-ai.pages.dev/"><link rel="stylesheet" href="assets/tokens.css?v=102c7d27"><link rel="stylesheet" href="assets/web.css?v=f4dd026b"><link rel="stylesheet" href="assets/theme-dark.css?v=bb1b5134"></head><body class=" web">
+</style><meta name="ipcon-ai-endpoint" content="https://ipcon-ai.pages.dev/"><link rel="stylesheet" href="assets/tokens.css?v=102c7d27"><link rel="stylesheet" href="assets/web.css?v=2f1f1592"><link rel="stylesheet" href="assets/theme-dark.css?v=bb1b5134"></head><body class=" web">
 <div class="topbar"></div>
 <div class="hdr">
 <div class="hl">
@@ -457,8 +457,10 @@ body.light th.prod { border-right: none; }
       <div class="ai-chat">
         <div class="ai-chat-head"><b>直接问一句</b><span>描述使用场景和关键要求即可</span></div>
         <div class="ai-chat-log" id="aiChatLog"></div>
-        <div class="ai-chat-suggest" id="aiChatSuggest"></div>
-        <div class="ai-chat-status"><span class="ai-ds-status" id="aiDsStatus" data-state="checking"><i></i><em>检测中</em></span></div>
+        <div class="ai-chat-tools">
+          <div class="ai-chat-suggest" id="aiChatSuggest"></div>
+          <span class="ai-ds-status" id="aiDsStatus" data-state="checking"><i></i><em>检测中</em></span>
+        </div>
         <form class="ai-chat-form" id="aiChatForm">
           <input id="aiChatInput" type="text" autocomplete="off" placeholder="例如：耐温最高的三款？">
           <button type="submit">发送</button>
@@ -517,8 +519,8 @@ body.light th.prod { border-right: none; }
       <div class="ai-chat wiki-embedded">
       <div class="ai-chat-head"><b>问 AI 这款材料</b><span>直接问 TDS · 应用 · 打印</span></div>
       <div class="ai-chat-log" id="wikiChatLog"></div>
-      <div class="ai-chat-suggest" id="wikiChatSuggest"></div>
-      <div class="ai-chat-status"><span class="ai-ds-status" id="wikiDsStatus" data-state="checking"><i></i><em>检测中</em></span></div><form class="ai-chat-form" id="wikiChatForm">
+      <div class="ai-chat-tools"><div class="ai-chat-suggest" id="wikiChatSuggest"></div><span class="ai-ds-status" id="wikiDsStatus" data-state="checking"><i></i><em>检测中</em></span></div>
+      <form class="ai-chat-form" id="wikiChatForm">
         <input id="wikiChatInput" type="text" autocomplete="off" placeholder="例如：这个材料适合做高温结构件吗？">
         <button type="submit">发送</button>
       </form>

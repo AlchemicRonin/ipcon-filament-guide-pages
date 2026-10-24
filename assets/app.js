@@ -812,7 +812,11 @@
       const pct = n == null ? 0 : Math.max(4, Math.min(100, n / maxFor(r.label, r.detail) * 100));
       const side = (r.detail || '').match(/XY|Z/)?.[0];
       const label = side ? `${r.label} · ${side}` : r.label;
-      return `<div class="wiki-stat${String(r.value).length > 28 ? ' long' : ''}" style="--stat-color:${colors[r.label] || 'var(--brand)'}"><span>${esc(label)}</span><b>${esc(r.value)}</b><i><em style="width:${pct.toFixed(1)}%"></em></i></div>`;
+      return `<div class="wiki-stat${String(r.value).length > 28 ? ' long' : ''}" style="--stat-color:${colors[r.label] || 'var(--brand)'}">
+        <div class="wiki-stat-label"><em class="ws-dot"></em><span>${esc(r.label)}</span>${r.detail ? `<small>${esc(r.detail)}</small>` : ''}</div>
+        <b>${esc(r.value)}</b>
+        <div class="ws-track"><i style="width:${pct.toFixed(1)}%"></i></div>
+      </div>`;
     }).join('');
   }
 

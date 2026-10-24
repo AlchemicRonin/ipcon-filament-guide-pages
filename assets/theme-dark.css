@@ -79,13 +79,13 @@
 [data-theme="dark"] .grid th.prod .pm a { color: var(--c-ededf2) !important; }
 
 [data-theme="dark"] .noz b { background: var(--c-20222a); border-color: var(--c-343640); color: var(--c-a0a0a8); }
-[data-theme="dark"] .noz b.on { background: var(--ds); border-color: var(--ds); color: #fff; }
-[data-theme="dark"] .noz b.rec { background: var(--c-1f5fbf); border-color: var(--c-2e7bff); color: #fff; }
+[data-theme="dark"] .noz b.on { background: var(--ds); border-color: var(--ds); color: var(--c-fff); }
+[data-theme="dark"] .noz b.rec { background: var(--c-1f5fbf); border-color: var(--c-2e7bff); color: var(--c-fff); }
 [data-theme="dark"] .pill.ok { background: var(--c-173a2b); box-shadow: inset 0 0 0 1px var(--c-2e6b4c); color: var(--c-7ee2a8); }
 [data-theme="dark"] .pill.rec { background: var(--c-3a2e16); box-shadow: inset 0 0 0 1px var(--c-6b5326); color: var(--c-f5c451); }
 [data-theme="dark"] .pill.no { background: var(--c-25262d); box-shadow: inset 0 0 0 1px var(--c-3a3b44); color: var(--c-a0a0a8); }
 [data-theme="dark"] .badge { background: var(--c-173a2b); color: var(--c-7ee2a8); }
-[data-theme="dark"] .ai-top-select { background-image: linear-gradient(100deg,var(--ds),var(--c-3451c9)) !important; color: #fff; animation: none; }
+[data-theme="dark"] .ai-top-select { background-image: linear-gradient(100deg,var(--ds),var(--c-3451c9)) !important; color: var(--c-fff); animation: none; }
 [data-theme="dark"] .ai-top-select option { background: var(--c-15161c); color: var(--c-f5f5f7); }
 
 [data-theme="dark"] .web .hdr-theme:hover { background: var(--c-222633); border-color: var(--ds); color: var(--c-9db7ff); }
@@ -192,9 +192,9 @@ html[data-theme="dark"] { background: var(--c-0b0c10); }
 }
 [data-theme="dark"] .ai-top-select:disabled {
   background-image: none !important;
-  background-color: #1B1D26 !important;
-  color: #777B85 !important;
-  border: 1px solid #2E3140;
+  background-color: var(--c-1b1d26) !important;
+  color: var(--c-777b85) !important;
+  border: 1px solid var(--c-2e3140);
   opacity: 1;
   box-shadow: none;
 }
@@ -249,3 +249,71 @@ html[data-theme="dark"] { background: var(--c-0b0c10); }
 }
 [data-theme="dark"] .ai-sources { border-top-color: rgba(255,255,255,.09); }
 [data-theme="dark"] .ai-sources a { color: var(--c-9db7ff); }
+[data-theme="dark"] .ai-eyebrow { color: var(--ds); }
+
+/* dark wiki AI CTA: same shimmer as the light theme */
+[data-theme="dark"] .wiki-btn.primary {
+  background-color: transparent;
+  background-image: var(--brand-grad);
+  background-size: 200% 100%;
+  background-repeat: repeat;
+  animation: titleFlow var(--brand-speed, 5.4s) linear infinite;
+  border: 0;
+  color: var(--c-fff);
+  box-shadow: 0 5px 16px rgba(4,71,146,.28);
+}
+[data-theme="dark"] .wiki-btn.primary:hover { filter: brightness(1.1); }
+[data-theme="dark"] .wiki-chat h4 { color: var(--ds); }
+
+/* dark wiki: readable headings/labels and a visible DS shimmer */
+[data-theme="dark"] .wiki-card h4,
+[data-theme="dark"] .wiki-feature-group h5 { color: var(--c-9db7ff); }
+[data-theme="dark"] .wiki-visual-label,
+[data-theme="dark"] .wiki-visual-label small,
+[data-theme="dark"] .wiki-stat > span,
+[data-theme="dark"] .wiki-fact span { color: var(--c-a0a0a8); }
+[data-theme="dark"] .wiki-title > span { color: var(--c-ededeff) !important; }
+[data-theme="dark"] .wiki-btn.primary {
+  background-color: transparent;
+  background-image: linear-gradient(100deg, var(--ds), var(--c-7c3aed), var(--c-00a3c7), var(--ds));
+  background-size: 220% 100%;
+  background-repeat: repeat;
+  animation: titleFlow 3.2s linear infinite;
+  border: 0;
+  color: var(--c-fff);
+}
+
+/* one dark-theme gradient system: brighter DeepSeek colors everywhere */
+[data-theme="dark"] .web {
+  --brand-grad: linear-gradient(100deg, var(--ds) 0%, var(--c-7c3aed) 30%, var(--c-00a3c7) 62%, var(--ds) 100%);
+  --brand-speed: 5.4s;
+}
+[data-theme="dark"] .web-guide h2 {
+  background-image: var(--brand-grad) !important;
+  background-size: 200% 100% !important;
+  background-position: 0% 50% !important;
+  animation: titleFlow var(--brand-speed) linear infinite !important;
+}
+[data-theme="dark"] .ai-top-select {
+  background-image: var(--brand-grad) !important;
+  background-size: 200% 100% !important;
+  animation: titleFlow var(--brand-speed) linear infinite;
+}
+[data-theme="dark"] .wiki-btn.primary {
+  background-color: transparent;
+  background-image: var(--brand-grad);
+  background-size: 200% 100%;
+  background-repeat: repeat;
+  animation: titleFlow var(--brand-speed) linear infinite;
+  border: 0;
+  color: var(--c-fff);
+}
+
+[data-theme="dark"] .wiki-stat-label > span { color: var(--c-ededeff); }
+[data-theme="dark"] .wiki-stat-label > small { color: var(--c-a0a0a8); }
+[data-theme="dark"] .ws-track { background: var(--c-2a2c35); }
+[data-theme="dark"] .ws-track i { background: var(--stat-color, var(--c-8fb4ff)); }
+
+[data-theme="dark"] .wiki-card h4 { color: var(--c-ededeff); text-decoration-color: var(--ds); }
+[data-theme="dark"] .wiki-visual-label > span { color: var(--c-ededeff); }
+[data-theme="dark"] .wiki-visual-value { color: var(--c-ededeff); }

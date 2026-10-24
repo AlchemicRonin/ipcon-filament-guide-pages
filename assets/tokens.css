@@ -1,6 +1,7 @@
 /* design tokens: every literal color in web.css/theme-dark.css resolves here */
 :root {
   --c-fff: #FFFFFF;
+  --c-ededeff: #EDEDEF;
   --c-b9cce2: #B9CCE2;
   --chart-strength: #2AAEC6;
   --chart-stiffness: #7C20A3;
@@ -105,4 +106,26 @@
   --c-f7fbff: #F7FBFF;
   --c-f8faff: #F8FAFF;
   --c-fff8e6: #FFF8E6;
+  --c-000000: #000;
+  --c-eef1f6: #EEF1F6;
+  --c-8e8e93: #8E8E93;
+  --c-dfe4ec: #DFE4EC;
+  --c-c7c7cc: #C7C7CC;
+  --c-30b14e: #30B14E;
+  --c-ff3b30: #FF3B30;
+  --surface: #FFFFFF;
+  --ink-3: #3A3A3C;
+  --c-177245: #177245;
+  --c-63636b: #63636B;
+  --c-8a4b24: #8A4B24;
+  --c-8a5a00: #8A5A00;
+  --c-d7dbe4: #D7DBE4;
+  --c-dce5f1: #DCE5F1;
+  --c-e6eaf2: #E6EAF2;
+  --c-e8590c: #E8590C;
+  --c-e8f7ee: #E8F7EE;
+  --c-e9edf5: #E9EDF5;
+  --c-efeff4: #EFEFF4;
+  --c-f0a879: #F0A879;
+  --c-fdf3dd: #FDF3DD;
 }

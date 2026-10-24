@@ -421,9 +421,25 @@
 
   const langHref = document.querySelector('.hdr-lang');
   if (langHref && location.search) langHref.href = langHref.getAttribute('href') + location.search;
+// @ts-check
+
+/**
+ * @typedef {{ title: string, url: string, site?: string }} AISource
+ * @typedef {{ answer: string, sources: AISource[] }} AIResult
+ * @typedef {{ timeout?: number, fallback?: string }} ReadOptions
+ * @typedef {HTMLElement & { _typerCancel?: (() => void) | null }} ChatEl
+ */
+
   // Shared AI response pipeline for the selection assistant and the Wiki chat.
   // Caller owns fetch/fallback; this owns stream parsing, typing, citations.
+  /**
+   * @param {Response} res
+   * @param {ChatEl} el
+   * @param {ReadOptions} [opts]
+   * @returns {Promise<AIResult>}
+   */
   async function readAIAnswer(res, el, opts = {}) {
+    /** @type {AISource[]} */
     const sources = readSources(res);
     const wantStream = (res.headers.get('content-type') || '').includes('text/event-stream') && res.body;
     if (!wantStream) {
@@ -475,6 +491,10 @@
     return { answer, sources };
   }
 
+  /**
+   * @param {{endpoint: string, question: string, context: string, locale: string, el: ChatEl, fallback?: string, timeout?: number}} args
+   * @returns {Promise<AIResult>}
+   */
   async function requestChatCompletion({ endpoint, question, context, locale, el, fallback = '', timeout = 25000 }) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeout);
@@ -495,6 +515,10 @@
     }
   }
 
+  /**
+   * @param {{question: string, context: string, locale: string, endpoint: string, el: ChatEl, fallback: string, onStatus?: (s: string) => void, onSettled?: () => void}} args
+   * @returns {Promise<AIResult | {social: true, answer: string} | {error: unknown, answer: string}>}
+   */
   async function runChatTurn({ question, context, locale, endpoint, el, fallback, onStatus, onSettled }) {
     const social = smallTalkReply(question, locale === 'zh');
     if (social) return { social: true, answer: social };
@@ -709,6 +733,7 @@
 
   let closeTimer = null;
   let aiPrewarmed = false;
+  let aiReturnFocus = null;
   function prewarmAI() {
     if (aiPrewarmed) return;
     aiPrewarmed = true;
@@ -720,6 +745,8 @@
 
   function openAI() {
     prewarmAI();
+    aiReturnFocus = document.activeElement && document.activeElement !== document.body
+      ? document.activeElement : document.getElementById('assistantBtn');
     if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
     aiModal.hidden = false;
     requestAnimationFrame(() => {
@@ -750,6 +777,12 @@
       aiModal.hidden = true;
       closeTimer = null;
       unlockPage();
+      const target = aiReturnFocus;
+      aiReturnFocus = null;
+      requestAnimationFrame(() => {
+        if (target?.isConnected) target.focus();
+        else document.getElementById('assistantBtn')?.focus();
+      });
     }, delay);
   }
   function pickOnly(indices) {
@@ -820,6 +853,7 @@
     });
   })();
   const WIKI = JSON.parse(document.getElementById('wikiData')?.textContent || '{}');
+  const FALLBACK_COLOR = getComputedStyle(document.documentElement).getPropertyValue('--chart-hardness').trim() || 'currentColor';
   const wikiModal = document.getElementById('wikiModal');
   const wikiHead = document.getElementById('wikiHead');
   const wikiBody = document.getElementById('wikiBody');
@@ -1001,7 +1035,7 @@
     const d = p && WIKI[p.model];
     if (!d) return;
     const card = document.querySelectorAll('.appgrid .card')[idx];
-    const color = card?.querySelector('.cmodel')?.style.getPropertyValue('--swatch-color') || '#7A7A80';
+    const color = card?.querySelector('.cmodel')?.style.getPropertyValue('--swatch-color') || FALLBACK_COLOR;
     const productColor = card?.querySelector('.ccolor')?.style.getPropertyValue('--product-color') || 'var(--muted)';
     const tds = d.tds ? encodeURI(d.tds) : '';
     wikiHead.innerHTML = `
@@ -1408,6 +1442,14 @@
   document.addEventListener('keydown', e => {
     if (aiModal.hidden) return;
     if (e.key === 'Escape') { closeAI(); return; }
+    if (e.key === 'Tab' && !aiModal.hidden) {
+      const focusable = [...aiModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter(el => !el.disabled && el.getClientRects().length);
+      if (!focusable.length) return;
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (!aiModal.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+      else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
     if (e.key !== 'Tab') return;
     const focusable = [...aiModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
       .filter(el => !el.disabled && el.getClientRects().length);

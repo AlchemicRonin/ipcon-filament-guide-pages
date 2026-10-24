@@ -399,6 +399,59 @@
 
   const langHref = document.querySelector('.hdr-lang');
   if (langHref && location.search) langHref.href = langHref.getAttribute('href') + location.search;
+  // Shared AI response pipeline for the selection assistant and the Wiki chat.
+  // Caller owns fetch/fallback; this owns stream parsing, typing, citations.
+  async function readAIAnswer(res, el, opts = {}) {
+    const sources = readSources(res);
+    const wantStream = (res.headers.get('content-type') || '').includes('text/event-stream') && res.body;
+    if (!wantStream) {
+      const data = await res.json().catch(() => ({}));
+      const answer = data.answer || data.error || (opts.fallback || '');
+      const typer = makeTypedAnswer(el);
+      typer.push(answer);
+      typer.finish();
+      await typer.done;
+      appendSources(el, data.sources || sources);
+      return { answer, sources: data.sources || sources };
+    }
+
+    const typer = makeTypedAnswer(el);
+    el._typerCancel = typer.cancel;
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', answer = '';
+    while (true) {
+      let timeoutId;
+      const timed = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error('stream timeout')), opts.timeout || 12000);
+      });
+      let part;
+      try { part = await Promise.race([reader.read(), timed]); }
+      finally { clearTimeout(timeoutId); }
+      if (part.done) break;
+      buf += dec.decode(part.value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop() || '';
+      for (const line of lines) {
+        const raw = line.trim();
+        if (!raw.startsWith('data:')) continue;
+        const payload = raw.slice(5).trim();
+        if (!payload || payload === '[DONE]') continue;
+        try {
+          const chunk = JSON.parse(payload);
+          if (chunk?.ipcon_sources) { sources.splice(0, sources.length, ...chunk.ipcon_sources); continue; }
+          const delta = chunk?.choices?.[0]?.delta?.content;
+          if (delta) { answer += delta; typer.push(delta); }
+        } catch {}
+      }
+    }
+    if (!answer.trim()) throw new Error('empty stream');
+    typer.finish();
+    await typer.done;
+    el._typerCancel = null;
+    appendSources(el, sources);
+    return { answer, sources };
+  }
   // ---- local selection assistant ----
   const UI = JSON.parse(document.getElementById('uiData')?.textContent || '{}');
   const PRODUCTS = JSON.parse(document.getElementById('productData')?.textContent || '[]');
@@ -1037,34 +1090,7 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       if ((res.headers.get('content-type') || '').includes('text/event-stream') && res.body) {
         pending.classList.remove('thinking');
-        let sources = readSources(res);
-        const typer = makeTypedAnswer(pending);
-        const reader = res.body.getReader(); const dec = new TextDecoder();
-        let buf = '', answer = '';
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          buf += dec.decode(value, { stream: true });
-          const lines = buf.split('\n'); buf = lines.pop() || '';
-          for (const line of lines) {
-            const raw = line.trim(); if (!raw.startsWith('data:')) continue;
-            const payload = raw.slice(5).trim(); if (!payload || payload === '[DONE]') continue;
-            try {
-              const j = JSON.parse(payload);
-              if (j?.ipcon_sources) { sources = j.ipcon_sources; continue; }
-              const delta = j?.choices?.[0]?.delta?.content;
-              if (delta) {
-                answer += delta;
-                typer.push(delta);
-              }
-            } catch {}
-          }
-        }
-        if (!answer.trim()) throw new Error('empty');
-        typer.finish();
-        await typer.done;
-        appendSources(pending, sources);
-        wikiChatLog.classList.toggle('is-scrollable', wikiChatLog.scrollHeight - wikiChatLog.clientHeight > 2);
+        await readAIAnswer(res, pending);
       } else {
         const data = await res.json();
         pending.classList.remove('thinking');
@@ -1280,48 +1306,11 @@
     });
   }
 
-  async function streamAnswer(res, pending, local) {
-    const reader = res.body?.getReader();
-    if (!reader) throw new Error('no stream body');
-    const decoder = new TextDecoder();
-    let buffer = '', answer = '';
+  async function streamAnswer(res, pending) {
     const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
-    let sources = readSources(res);
     pending.classList.remove('thinking');
     pending.classList.add('deepseek');
-    const typer = makeTypedAnswer(pending);
-    pending._typerCancel = typer.cancel;
-    while (true) {
-      let timeoutId;
-      const timed = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => reject(new Error('stream timeout')), 12000);
-      });
-      let part;
-      try { part = await Promise.race([reader.read(), timed]); }
-      finally { clearTimeout(timeoutId); }
-      if (part.done) break;
-      const value = part.value;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      for (const line of lines) {
-        const raw = line.trim();
-        if (!raw.startsWith('data:')) continue;
-        const payload = raw.slice(5).trim();
-        if (!payload || payload === '[DONE]') continue;
-        try {
-          const chunk = JSON.parse(payload);
-          if (chunk?.ipcon_sources) { sources = chunk.ipcon_sources; continue; }
-          const delta = chunk?.choices?.[0]?.delta?.content;
-          if (delta) { answer += delta; typer.push(delta); }
-        } catch {}
-      }
-    }
-    if (!answer.trim()) throw new Error('empty stream');
-    typer.finish();
-    await typer.done;
-    pending._typerCancel = null;
-    appendSources(pending, sources);
+    await readAIAnswer(res, pending);
     setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
     animatePanelFrom(before);
     scrollPanelToBottom();
@@ -1371,15 +1360,10 @@
         await streamAnswer(res, pending, local);
         return;
       }
-      const data = await res.json();
       const before = aiPanel ? aiPanel.getBoundingClientRect() : null;
       pending.classList.remove('thinking');
       pending.classList.add('deepseek');
-      const typer = makeTypedAnswer(pending);
-      typer.push(data.answer || data.error || local);
-      typer.finish();
-      await typer.done;
-      appendSources(pending, data.sources || []);
+      await readAIAnswer(res, pending, { fallback: local });
       setAIStatus('ok', isCN ? 'DeepSeek 可用' : 'DeepSeek available');
       animatePanelFrom(before);
       scrollPanelToBottom();

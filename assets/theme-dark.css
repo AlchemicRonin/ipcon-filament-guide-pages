@@ -42,11 +42,14 @@
 [data-theme="dark"] .ai-sub, [data-theme="dark"] .ai-chat-head span, [data-theme="dark"] .ai-note { color: var(--c-a0a0a8); }
 
 [data-theme="dark"] .ai-prio { background: var(--c-1b1d26); border-color: var(--c-343640); color: var(--c-e8e8ec); }
-[data-theme="dark"] .ai-result { background: var(--c-191b24); border-color: var(--c-2e3140); }
-[data-theme="dark"] .ai-result.top { background: var(--c-1b2230); border-color: var(--c-3a5a90); }
+[data-theme="dark"] .ai-prio.on { background: var(--p-color, var(--brand)); border-color: transparent; color: var(--p-ink, var(--c-fff)); }
+[data-theme="dark"] .ai-results { --rank-panel: var(--c-191b24); }
+[data-theme="dark"] .ai-result { background: var(--rank-bg, var(--c-191b24)); border-color: var(--rank-border, var(--c-2e3140)); }
+[data-theme="dark"] .ai-result.top { background: var(--rank-bg); border-color: var(--rank-border); }
 [data-theme="dark"] .ai-r-name { color: var(--c-f5f5f7); }
+[data-theme="dark"] .ai-r-name small { color: var(--c-a0a0a8); }
 [data-theme="dark"] .ai-r-stats { color: var(--c-a0a0a8); }
-[data-theme="dark"] .ai-add { background: var(--c-1b1d26); color: var(--c-8fb4ff); border-color: var(--c-3a5a90); }
+[data-theme="dark"] .ai-add { background: var(--rank-panel); color: color-mix(in srgb, var(--rank-color, var(--brand)) 82%, var(--c-f5f5f7)); border-color: color-mix(in srgb, var(--rank-color, var(--brand)) 55%, var(--c-2e3140)); }
 [data-theme="dark"] .ai-empty { background: var(--c-1b1d26); border-color: var(--c-343640); color: var(--c-a0a0a8); }
 [data-theme="dark"] .ai-chat-form input { background: var(--c-15161c); border-color: var(--c-343640); color: var(--c-f5f5f7); }
 [data-theme="dark"] .ai-chat-form input::placeholder { color: transparent; }
@@ -183,7 +186,7 @@ html[data-theme="dark"] { background: var(--c-0b0c10); }
 /* links and step numbers in the dark page shell */
 [data-theme="dark"] .sub a.inline-link { color: var(--c-8fb4ff); }
 [data-theme="dark"] .wg-steps b { color: var(--c-8fb4ff); }
-[data-theme="dark"] .ai-score { color: var(--c-8fb4ff); }
+[data-theme="dark"] .ai-score { color: color-mix(in srgb, var(--rank-color, var(--brand)) 82%, var(--c-f5f5f7)); }
 [data-theme="dark"] .ai-chat-suggest button:hover { border-color: var(--ds); color: var(--c-9db7ff); }
 
 [data-theme="dark"] .ai-panel button:focus-visible, [data-theme="dark"] .ai-panel input:focus-visible,
@@ -319,3 +322,17 @@ html[data-theme="dark"] { background: var(--c-0b0c10); }
 [data-theme="dark"] .wiki-visual-value { color: var(--c-ededeff); }
 [data-theme="dark"] .ai-msg strong { color: var(--c-ededeff); }
 [data-theme="dark"] .ai-msg code { background: var(--c-252833); }
+
+/* long-term heat value uses the same light text as every other table value */
+[data-theme="dark"] .lheat b { color: var(--c-ededeff); }
+[data-theme="dark"] .lheat small { color: var(--c-a0a0a8); }
+
+/* HDT cell values follow the same light ink as normal table values */
+[data-theme="dark"] .hdt-pair { color: var(--c-ededeff); }
+[data-theme="dark"] .hdt-pair b { color: inherit; }
+[data-theme="dark"] .hdt-k { color: var(--c-a0a0a8); }
+[data-theme="dark"] .hdt-note { color: var(--c-a0a0a8); }
+
+
+[data-theme="dark"] .wiki-hdt-cond { color: var(--c-a0a0a8); }
+

@@ -117,6 +117,22 @@
     requestAnimationFrame(frame);
   }
 
+  function animateHeatNumbers(cell) {
+    if (REDUCED || cell.dataset.heatAnimated === '1') return;
+    cell.dataset.heatAnimated = '1';
+    cell.querySelectorAll('.hdt-pair b').forEach(node => {
+      const text = node.firstChild;
+      if (!text || text.nodeType !== 3) return;
+      const match = text.nodeValue.match(/(\d+(?:\.\d+)?)/);
+      if (!match) return;
+      const target = Number(match[1]);
+      if (!Number.isFinite(target)) return;
+      const decimals = (match[1].split('.')[1] || '').length;
+      text.nodeValue = text.nodeValue.replace(match[1], (0).toFixed(decimals));
+      animateNodeValue(text, target, decimals);
+    });
+  }
+
   function animateBar(cell) {
     if (REDUCED) return;
     const bar = cell.querySelector('.bar i, .relbar i');
@@ -158,6 +174,7 @@
   function countCell(cell) {
     if (!cell || cell.dataset.counted === '1') return;
     animateBar(cell);
+    animateHeatNumbers(cell);
     const vt = cell.querySelector('.vt');
     if (!vt) return;
     const raw = (vt.textContent || '').trim();
@@ -212,6 +229,17 @@
       });
     }, { threshold: 0.12 });
     cells.forEach(c => io.observe(c));
+    // Special heat cells need their own observer: they have no .vt,
+    // and can sit outside the initial viewport.
+    const heatCells = [...document.querySelectorAll('table.grid td.v')]
+      .filter(c => c.querySelector('.hdt, .lheat'));
+    if (!('IntersectionObserver' in window)) { heatCells.forEach(countCell); return; }
+    const heatIo = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (en.isIntersecting) { heatIo.unobserve(en.target); countCell(en.target); }
+      });
+    }, { threshold: 0.12 });
+    heatCells.forEach(c => heatIo.observe(c));
   }
 
   function animateScores() {
@@ -366,6 +394,7 @@
         });
       });
     }
+    document.dispatchEvent(new CustomEvent('ipcon:tablechange'));
     count.textContent = `${UI.SELECTED || '已选'} ${selected.size} / ${all.length}`;
     const empty = document.getElementById('emptyState');
     if (empty) { empty.hidden = selected.size > 0; empty.textContent = UI.EMPTY || '未选择耗材，请勾选产品或点「全选」'; }
@@ -407,6 +436,7 @@
 
   search.addEventListener('input', () => {
     const q = norm(search.value);
+    document.dispatchEvent(new CustomEvent('ipcon:tablechange'));
     [...picks.children].forEach(el => {
       el.style.display = !q || el.dataset.search.includes(q) ? '' : 'none';
     });
@@ -421,6 +451,12 @@
 
   const langHref = document.querySelector('.hdr-lang');
   if (langHref && location.search) langHref.href = langHref.getAttribute('href') + location.search;
+
+  window.IPCONTable = {
+    isSelected(i) { return selected.has(i); },
+    query() { return search.value || ''; },
+    all() { return all.map(p => ({ i: p.i, model: p.model, color: p.color })); },
+  };
 // @ts-check
 
 /**
@@ -450,6 +486,7 @@
       typer.finish();
       await typer.done;
       appendSources(el, data.sources || sources);
+      el.classList.remove('thinking');
       return { answer, sources: data.sources || sources };
     }
 
@@ -488,6 +525,7 @@
     await typer.done;
     el._typerCancel = null;
     appendSources(el, sources);
+    el.classList.remove('thinking');
     return { answer, sources };
   }
 
@@ -507,7 +545,6 @@
         cache: 'no-store',
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      el.classList.remove('thinking');
       el.classList.add('deepseek');
       return await readAIAnswer(res, el, { fallback });
     } finally {
@@ -570,7 +607,7 @@
 
   function buildAIPrios() {
     aiPrios.innerHTML = AI_PRIOS.map(p =>
-      `<button type="button" class="ai-prio ${aiState.has(p.key) ? 'on' : ''}" data-ai-prio="${p.key}" style="--p-color:${p.theme};--p-ink:${p.ink}"><span class="pdot"></span>${UI.PRIOS?.[p.key] || p.label}</button>`
+      `<button type="button" class="ai-prio ${aiState.has(p.key) ? 'on' : ''}" aria-pressed="${aiState.has(p.key)}" data-ai-prio="${p.key}" style="--p-color:${p.theme};--p-ink:${p.ink}"><span class="pdot"></span>${UI.PRIOS?.[p.key] || p.label}</button>`
     ).join('');
   }
 
@@ -597,20 +634,22 @@
     const active = AI_PRIOS.filter(p => aiState.has(p.key));
     if (!active.length) {
       aiTop = [];
-      aiResults.innerHTML = `<div class="ai-empty">${UI.AI_EMPTY || '请至少选择一个偏好'}</div>`;
+      aiResults.innerHTML = `<div class="ai-empty">${UI.AI_EMPTY || '请选择一个偏好'}</div>`;
       aiNote.textContent = UI.AI_EMPTY_NOTE || '未选择偏好';
       if (aiTopSelect) aiTopSelect.disabled = true;
       return;
     }
     if (aiTopSelect) aiTopSelect.disabled = false;
     const n = Math.max(1, Math.min(15, aiTopN || 3));
+    aiResults.style.setProperty('--rank-color', active[0].theme);
+    aiResults.style.setProperty('--rank-ink', active[0].ink || '#fff');
     aiTop = scoreProducts().slice(0, n);
     aiResults.innerHTML = aiTop.map((r, i) => {
       const stats = AI_PRIOS.filter(p => aiState.has(p.key)).slice(0, 3)
         .map(p => `${p.short || p.label} ${fmt(p.values[r.idx], p.unit)}`).join(' · ') || '综合评分';
       return `<div class="ai-result ${i === 0 ? 'top' : ''}" data-idx="${r.idx}">
         <div class="ai-rank">${i + 1}</div>
-        <div class="ai-r-main"><div class="ai-r-name"><i class="ai-r-dot" style="background:${ths[r.idx]?.querySelector('.pm')?.style.getPropertyValue('--product-color') || 'var(--muted)'}"></i><b>${r.p.model}</b><small>${all[r.idx]?.color || r.p.color}</small></div>
+        <div class="ai-r-main"><div class="ai-r-name" style="--product-color:${ths[r.idx]?.querySelector('.pm')?.style.getPropertyValue('--product-color') || 'var(--muted)'}"><i class="ai-r-dot"></i><b>${r.p.model}</b><small>${all[r.idx]?.color || r.p.color}</small></div>
         <div class="ai-r-stats">${stats}</div></div>
         <div class="ai-score">${r.score}</div>
         <button class="ai-add" type="button" data-ai-pick="${r.idx}">${UI.ADD || '加入对比'}</button>
@@ -807,29 +846,11 @@
     const prio = e.target.closest('[data-ai-prio]');
     if (prio) {
       const k = prio.dataset.aiPrio;
-      if (aiState.has(k)) aiState.delete(k); else aiState.add(k);
+      if (aiState.has(k)) aiState.clear(); else { aiState.clear(); aiState.add(k); }
       buildAIPrios(); renderAI(); syncBrandPhase();
     }
   });
 
-  const themeBtn = document.getElementById('themeToggle');
-  function applyTheme(dark) {
-    const root = document.documentElement;
-    root.dataset.theme = dark ? 'dark' : 'light';
-    if (themeBtn) {
-      const label = themeBtn.querySelector('.theme-label');
-      if (label) label.textContent = dark ? '浅色' : '深色';
-      themeBtn.setAttribute('aria-label', dark ? '切换到浅色主题' : '切换到深色主题');
-    }
-  }
-  let savedTheme = null;
-  try { savedTheme = localStorage.getItem('ipcon-theme'); } catch (e) {}
-  applyTheme(savedTheme ? savedTheme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
-  themeBtn?.addEventListener('click', () => {
-    const dark = document.documentElement.dataset.theme !== 'dark';
-    applyTheme(dark);
-    try { localStorage.setItem('ipcon-theme', dark ? 'dark' : 'light'); } catch (e) {}
-  });
 
   // Hovering a vertical group label highlights the whole rowspan group,
   // not just its first row.
@@ -930,6 +951,23 @@
     }
     return out + esc(line.slice(last));
   }
+  function lastTemperature(value) {
+    const temps = [...String(value || '').matchAll(/(\d+(?:\.\d+)?)\s*°C/g)].map(m => Number(m[1]));
+    return temps.length ? temps[temps.length - 1] : null;
+  }
+  function maxTemperature(label, detail) {
+    let max = 0;
+    Object.values(WIKI).forEach(x => {
+      const g = (x.table?.[wikiCN ? 'CN' : 'EN'] || []).find(q => /特性|propert/i.test(q.label));
+      g?.rows.forEach(r => {
+        if (r.label === label && (r.detail || '') === detail) {
+          const n = lastTemperature(r.value); if (n != null) max = Math.max(max, n);
+        }
+      });
+    });
+    return max || 1;
+  }
+
   function quickStats(w) {
     const groups = w.table?.[wikiCN ? 'CN' : 'EN'] || [];
     const prop = groups.find(g => /特性|propert/i.test(g.label));
@@ -959,17 +997,49 @@
       });
       return mx || 1;
     };
-    return prop.rows.map(r => {
-      const n = num(r.value);
-      const pct = n == null ? 0 : Math.max(4, Math.min(100, n / maxFor(r.label, r.detail) * 100));
+    const groupFor = label => /强度|刚度|韧性|层间|Strength|Stiffness|Toughness|Layer/i.test(label)
+      ? (wikiCN ? '力学性能' : 'Mechanical')
+      : /耐热|Heat/i.test(label)
+        ? (wikiCN ? '热学性能' : 'Thermal')
+        : /吸水|收缩|Water|Shrink/i.test(label)
+          ? (wikiCN ? '吸湿与尺寸' : 'Moisture & dimensions')
+          : (wikiCN ? '其他物性' : 'Other properties');
+    let currentGroup = '';
+    const rows = [];
+    for (const r of prop.rows) {
+      const group = groupFor(r.label);
+      if (group !== currentGroup) {
+        rows.push(`<div class="wiki-stat-group">${esc(group)}</div>`);
+        currentGroup = group;
+      }
+      const isHdt = /^(耐热性|Heat Resistance)$/.test(r.label);
+      const isLongHeat = /^(长期耐热性|Long-term Heat Resistance)$/.test(r.label);
+      const isHeat = isHdt || isLongHeat;
+      const raw = String(r.value || '').split('\n').map(x => x.trim()).filter(Boolean);
+      const main = raw[0] || '';
+      const note = isLongHeat ? raw.slice(1).join(' ') : '';
+      const n = isHeat ? lastTemperature(r.value) : num(r.value);
+      const top = isHeat ? maxTemperature(r.label, r.detail) : maxFor(r.label, r.detail);
+      const pct = n == null ? 0 : Math.max(4, Math.min(100, n / top * 100));
       const side = (r.detail || '').match(/XY|Z/)?.[0];
       const label = side ? `${r.label} · ${side}` : r.label;
-      return `<div class="wiki-stat${String(r.value).length > 28 ? ' long' : ''}" style="--stat-color:${colors[r.label] || 'var(--brand)'}">
-        <div class="wiki-stat-label"><em class="ws-dot"></em><span>${esc(r.label)}</span>${r.detail ? `<small>${esc(r.detail)}</small>` : ''}</div>
-        <b>${esc(r.value)}</b>
+      const wide = isHdt && raw.length > 1;
+      const lines = wide
+        ? `<div class="wiki-hdt-lines">${raw.map(line => {
+            const match = line.match(/^([^：:]+)[：:]\s*(.+)$/);
+            if (!match) return `<span class="wiki-hdt-line">${esc(line)}</span>`;
+            return `<span class="wiki-hdt-line"><span class="wiki-hdt-cond">${esc(match[1])}：</span><span class="wiki-hdt-value">${esc(match[2])}</span></span>`;
+          }).join('')}</div>`
+        : isLongHeat && note
+          ? `<b data-tip="${esc(note)}" aria-label="${esc(main)} ${esc(note)}" tabindex="0">${esc(main)}</b>`
+          : `<b>${esc(main)}</b>`;
+      rows.push(`<div class="wiki-stat${String(r.value).length > 28 ? ' long' : ''}${wide ? ' heat' : ''}" style="--stat-color:${colors[r.label] || 'var(--brand)'}">
+        <div class="wiki-stat-label"><em class="ws-dot"></em><span>${esc(r.label)}</span>${r.detail && !isLongHeat ? `<small>${esc(r.detail)}</small>` : ''}</div>
+        ${lines}
         <div class="ws-track"><i style="width:${pct.toFixed(1)}%"></i></div>
-      </div>`;
-    }).join('');
+      </div>`);
+    }
+    return rows.join('');
   }
 
   function cellHtmlFor(row, idx) {
@@ -1074,6 +1144,10 @@
         ${features}
         ${tableRows}
       </div>`;
+    wikiBody.querySelectorAll('.relbar i[data-target-width]').forEach(bar => {
+      bar.style.width = bar.dataset.targetWidth;
+      bar.style.transition = 'width .8s cubic-bezier(.2,.7,.2,1)';
+    });
   }
   const wikiScroller = wikiModal?.querySelector('.ai-panel-scroll');
   function updateWikiFade() {
@@ -1113,7 +1187,11 @@
     checkAIStatus?.();
     requestAnimationFrame(() => { wikiModal.classList.add('open'); updateWikiFade(); });
     lockPage();
-    setTimeout(() => wikiModal.querySelector('.wiki-btn.primary')?.focus(), 50);
+    const keyboardOpen = document.activeElement?.matches?.(':focus-visible');
+    setTimeout(() => {
+      if (keyboardOpen) wikiModal.querySelector('.wiki-btn.primary')?.focus();
+      else wikiModal.focus();
+    }, 50);
   }
   function closeWiki() {
     if (wikiModal.hidden) return;
@@ -1135,6 +1213,14 @@
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openWiki(Number(card.dataset.wiki)); }
     });
   });
+  document.querySelectorAll('[data-wiki-open]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      openWiki(Number(btn.dataset.wikiOpen));
+    });
+  });
+
   const wikiChatLog = document.getElementById('wikiChatLog');
   const wikiChatForm = document.getElementById('wikiChatForm');
   const wikiChatInput = document.getElementById('wikiChatInput');
@@ -1217,6 +1303,14 @@
     if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
+
+  window.IPCONWiki = {
+    openModel(model) {
+      const idx = PRODUCTS.findIndex(product => product.model === model);
+      if (idx >= 0) openWiki(idx);
+    },
+    close: closeWiki,
+  };
   const AI_ENDPOINT = document.querySelector('meta[name="ipcon-ai-endpoint"]')?.content?.trim() || '';
   const aiDsStatus = document.getElementById('aiDsStatus');
   function setAIStatus(state, label) {
@@ -1483,4 +1577,73 @@
   initCountUps();
   if ('requestIdleCallback' in window) requestIdleCallback(prewarmAI, { timeout: 1200 });
   else setTimeout(prewarmAI, 500);
+(() => {
+  const tooltip = document.createElement('div');
+  tooltip.className = 'ipcon-tip';
+  tooltip.id = 'ipcon-tip';
+  tooltip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tooltip);
+  let timer = 0, hideTimer = 0, active = null;
+
+  function place(el) {
+    const rect = el.getBoundingClientRect();
+    const gap = 8;
+    tooltip.style.visibility = 'hidden';
+    tooltip.classList.add('open');
+    const width = tooltip.offsetWidth;
+    const height = tooltip.offsetHeight;
+    let left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+    let top = rect.top - height - gap;
+    if (top < 8) top = rect.bottom + gap;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+    tooltip.style.visibility = '';
+  }
+
+  function show(el) {
+    clearTimeout(hideTimer);
+    active = el;
+    timer = window.setTimeout(() => {
+      const text = el.dataset.tip || '';
+      if (!text) return;
+      tooltip.innerHTML = el.dataset.tipHtml || '';
+      if (!el.dataset.tipHtml) tooltip.textContent = text;
+      tooltip.classList.add('open');
+      el.setAttribute('aria-describedby', 'ipcon-tip');
+      place(el);
+    }, 130);
+  }
+
+  function hide() {
+    clearTimeout(timer);
+    hideTimer = window.setTimeout(() => {
+      tooltip.classList.remove('open');
+      if (active) active.removeAttribute('aria-describedby');
+      active = null;
+    }, 120);
+  }
+
+  document.addEventListener('pointerover', event => {
+    const el = event.target.closest('[data-tip]');
+    if (el) show(el);
+  });
+  document.addEventListener('pointerout', event => {
+    const el = event.target.closest('[data-tip]');
+    if (el && !el.contains(event.relatedTarget) && document.activeElement !== el) hide();
+  });
+  document.addEventListener('focusin', event => {
+    const el = event.target.closest('[data-tip]');
+    if (el) show(el);
+  });
+  document.addEventListener('focusout', event => {
+    if (event.target.closest('[data-tip]')) hide();
+  });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') hide(); });
+  window.addEventListener('scroll', () => { if (active && tooltip.classList.contains('open')) place(active); }, { passive: true });
+  document.addEventListener('click', event => {
+    const el = event.target.closest('[data-tip]');
+    if (!el) { hide(); return; }
+    if (window.matchMedia('(hover: none)').matches) show(el);
+  });
+})();
 })();

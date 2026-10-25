@@ -7,6 +7,7 @@
   --chart-stiffness: #7C20A3;
   --chart-toughness: #2E9E5B;
   --chart-heat: #E8590C;
+  --danger: #B3261E;
   --chart-water: #0A7EA4;
   --chart-hardness: #7A7A80;
   --chart-density: #044792;
@@ -130,3 +131,11 @@
   --c-f0a879: #F0A879;
   --c-fdf3dd: #FDF3DD;
 }
+
+/* runtime rank vars: selected priority + readable rank ink */
+:root {
+  --rank-color: var(--brand);
+  --rank-ink: #ffffff;
+}
+
+[data-theme="dark"] { --danger: #FF8A7A; }

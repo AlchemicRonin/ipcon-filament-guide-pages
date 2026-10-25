@@ -1,0 +1,671 @@
+{
+  "version": 1,
+  "generated_at": "2026-10-25",
+  "source_policy": "TDS table + official product page + computed ranks; human review required",
+  "items": {
+    "PPA CF": {
+      "kind": "metric",
+      "metric": "弯曲模量 - XY 方向",
+      "title": "近金属级刚性",
+      "reason": "官方定位为金属替代；弯曲模量 11384 MPa，29 款有效数据中第 1。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/ppa-cf/",
+        "TDS 4.0",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高刚性 · 层间韧性偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "不支持 AMS / CFS",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "TPU 95A HS": {
+      "kind": "metric",
+      "metric": "冲击强度 - XY 方向",
+      "title": "高韧性",
+      "reason": "TDS 参数在 30 款有效数据中排名 1。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/tpu-95a-hs/",
+        "assets/tds/IPCON TPU 95A HS_TDS (Technical Data Sheet) _V2.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高韧性 · 强度偏低"
+      ],
+      "limits": [],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "TPU GF 70D": {
+      "kind": "metric",
+      "metric": "冲击强度 - XY 方向",
+      "title": "高韧性",
+      "reason": "TDS 参数在 30 款有效数据中排名 2。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/tpu-gf-70d/",
+        "assets/tds/IPCON TPU GF 70D_TDS (Technical Data Sheet) _V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高韧性 · 刚度偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "TPU CF 70D": {
+      "kind": "metric",
+      "metric": "冲击强度 - XY 方向",
+      "title": "高韧性",
+      "reason": "TDS 参数在 30 款有效数据中排名 3。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/tpu-cf-70d/",
+        "assets/tds/IPCON TPU CF 70D_TDS (Technical Data Sheet) _V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高韧性 · 强度偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PLA Matte": {
+      "kind": "claim",
+      "title": "30 种独家国潮色",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pla-matte/",
+        "assets/tds/IPCON PLA Matte_TDS (Technical Data Sheet) _V2.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PLA FC": {
+      "kind": "claim",
+      "title": "大多数模型可免涂胶",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pla-fc/",
+        "assets/tds/IPCON PLA FC_TDS (Technical Data Sheet) _V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PLA CF": {
+      "kind": "claim",
+      "title": "碳纤增刚增强",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pla-cf/",
+        "assets/tds/IPCON PLA CF_TDS (Technical Data Sheet) _V3.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PETG Metal": {
+      "kind": "metric",
+      "metric": "冲击强度 - XY 方向",
+      "title": "高韧性",
+      "reason": "TDS 参数在 30 款有效数据中排名 4。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/petg-metal/",
+        "assets/tds/IPCON PETG Metal_TDS (Technical Data Sheet) _V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高韧性 · 刚度偏低"
+      ],
+      "limits": [],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PETG GF": {
+      "kind": "claim",
+      "title": "柔和金属光泽",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/petg-gf/",
+        "assets/tds/IPCON PETG GF_TDS (Technical Data Sheet)_V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PETG CF": {
+      "kind": "claim",
+      "title": "高级金属观感",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/petg-cf/",
+        "assets/tds/IPCON PETG CF_TDS (Technical Data Sheet)_V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PET DET & FC": {
+      "kind": "claim",
+      "title": "大多数模型可免涂胶",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pet-det-fc/",
+        "assets/tds/IPCON PET DET & FC_TDS (Technical Data Sheet) _V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PP GF": {
+      "kind": "claim",
+      "title": "超低密度",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/3d-printer-filament-collections/",
+        "assets/tds/IPCON PP GF 70D_TDS (Technical Data Sheet) _V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PP CF": {
+      "kind": "metric",
+      "metric": "冲击强度 - XY 方向",
+      "title": "高韧性",
+      "reason": "TDS 参数在 30 款有效数据中排名 8。",
+      "evidence": [
+        "https://www.ipconpolymer.com/3d-printer-filament-collections/",
+        "assets/tds/IPCON PP CF 70D_TDS (Technical Data Sheet) _V2.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高韧性 · 刚度偏低"
+      ],
+      "limits": [],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PET GF": {
+      "kind": "claim",
+      "title": "高强度",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pet-gf/",
+        "assets/tds/IPCON PET GF_TDS (Technical Data Sheet)_V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PET CF": {
+      "kind": "metric",
+      "metric": "弯曲模量 - XY 方向",
+      "title": "高刚性",
+      "reason": "TDS 参数在 29 款有效数据中排名 8。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pet-cf/",
+        "assets/tds/IPCON PET CF_TDS (Technical Data Sheet)_V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高刚性 · 耐热性一般"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "ASA GF": {
+      "kind": "claim",
+      "title": "极高的抗紫外线和耐候性",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/asa-gf/",
+        "assets/tds/IPCON ASA GF_TDS (Technical Data Sheet)_V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "ASA CF": {
+      "kind": "claim",
+      "title": "顶级耐候",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/asa-cf/",
+        "assets/tds/IPCON ASA CF_TDS (Technical Data Sheet)_V1.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PC FR HS": {
+      "kind": "metric",
+      "metric": "冲击强度 - XY 方向",
+      "title": "高韧性",
+      "reason": "TDS 参数在 30 款有效数据中排名 7。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pc-fr-hs/",
+        "assets/tds/IPCON PC FR HS_TDS (Technical Data Sheet) _V2.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高韧性 · 刚度偏低"
+      ],
+      "limits": [
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PC GF": {
+      "kind": "claim",
+      "title": "超低翘曲（无需腔体加热）",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pc-gf/",
+        "assets/tds/IPCON PC GF_TDS (Technical Data Sheet)_V2.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PC CF": {
+      "kind": "metric",
+      "metric": "弯曲模量 - XY 方向",
+      "title": "高刚性",
+      "reason": "TDS 参数在 29 款有效数据中排名 6。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pc-cf/",
+        "assets/tds/IPCON PC CF_TDS (Technical Data Sheet)_V2.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高刚性 · 韧性偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "CoPA HS": {
+      "kind": "metric",
+      "metric": "冲击强度 - XY 方向",
+      "title": "高韧性",
+      "reason": "TDS 参数在 30 款有效数据中排名 5。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/copa-hs/",
+        "assets/tds/IPCON CoPA HS_TDS (Technical Data Sheet)_V2.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高韧性 · 耐热性一般"
+      ],
+      "limits": [
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PA6 GF": {
+      "kind": "metric",
+      "metric": "弯曲强度 - XY 方向",
+      "title": "高强度",
+      "reason": "TDS 参数在 30 款有效数据中排名 6。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pa6-gf/",
+        "assets/tds/IPCON PA6 GF_TDS (Technical Data Sheet)_V3.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高强度 · 刚度偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PA6 CF": {
+      "kind": "metric",
+      "metric": "弯曲强度 - XY 方向",
+      "title": "高强度",
+      "reason": "TDS 参数在 30 款有效数据中排名 3。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pa6-cf/",
+        "assets/tds/IPCON PA6 CF_TDS (Technical Data Sheet) _V3.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高强度 · 韧性偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PA HT GF": {
+      "kind": "metric",
+      "metric": "弯曲强度 - XY 方向",
+      "title": "高强度",
+      "reason": "TDS 参数在 30 款有效数据中排名 5。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/paht-gf/",
+        "assets/tds/IPCON PAHT GF_TDS (Technical Data Sheet)_V4.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高强度 · 韧性偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PA HT CF": {
+      "kind": "metric",
+      "metric": "弯曲强度 - XY 方向",
+      "title": "高强度",
+      "reason": "TDS 参数在 30 款有效数据中排名 2。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/paht-cf/",
+        "assets/tds/IPCON PAHT CF_TDS (Technical Data Sheet) _V3.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高强度 · 韧性偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PPA": {
+      "kind": "claim",
+      "title": "高强、高韧、极致耐温耐湿",
+      "reason": "该材料没有进入任一核心指标的头部排名；使用官方卖点作为主视觉。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/ppa/",
+        "assets/tds/IPCON PPA_TDS (Technical Data Sheet) _V4.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱",
+        "打印难度高"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PPA GF": {
+      "kind": "metric",
+      "metric": "热变形温度，0.45 MPa",
+      "title": "高耐热",
+      "reason": "TDS 参数在 27 款有效数据中排名 3。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/ppa-gf/",
+        "assets/tds/IPCON PPA GF_TDS (Technical Data Sheet) _V4.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高耐热 · 韧性偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱",
+        "打印难度高"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PPA GF FR": {
+      "kind": "metric",
+      "metric": "弯曲模量 - XY 方向",
+      "title": "高刚性",
+      "reason": "TDS 参数在 29 款有效数据中排名 3。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/ppa-gf-fr/",
+        "assets/tds/IPCON PPA GF FR_TDS (Technical Data Sheet) _V3.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高刚性 · 韧性偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "建议封箱",
+        "打印难度高"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PPS GF": {
+      "kind": "metric",
+      "metric": "热变形温度，0.45 MPa",
+      "title": "高耐热",
+      "reason": "TDS 参数在 27 款有效数据中排名 2。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pps-gf/",
+        "assets/tds/IPCON PPS GF_TDS (Technical Data Sheet) _V3.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高耐热 · 韧性偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "打印难度高"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    },
+    "PPS CF": {
+      "kind": "metric",
+      "metric": "热变形温度，0.45 MPa",
+      "title": "高耐热",
+      "reason": "TDS 参数在 27 款有效数据中排名 1。",
+      "evidence": [
+        "https://www.ipconpolymer.com/product/pps-cf/",
+        "assets/tds/IPCON PPS CF_TDS (Technical Data Sheet) _V3.0.pdf",
+        "internal ranking"
+      ],
+      "tradeoffs": [
+        "高耐热 · 韧性偏低"
+      ],
+      "limits": [
+        "需硬化钢喷嘴",
+        "打印难度高"
+      ],
+      "review": {
+        "status": "approved",
+        "reviewed_by": "neo",
+        "reviewed_at": "2026-10-25",
+        "note": "human approved"
+      }
+    }
+  }
+}

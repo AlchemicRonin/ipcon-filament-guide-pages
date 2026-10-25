@@ -138,4 +138,4 @@
   --rank-ink: #ffffff;
 }
 
-[data-theme="dark"] { --danger: #FF8A7A; }
+[data-theme="dark"] { --danger: #FF8A7A; --line-header: #2A2E3A; }
